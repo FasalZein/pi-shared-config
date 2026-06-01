@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # pi-shared-config — standalone bootstrap
-# Usage: curl -fsSL https://raw.githubusercontent.com/<org>/pi-shared-config/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
 
-REPO_URL="https://github.com/<your-org>/pi-shared-config"
+REPO_URL="https://github.com/FasalZein/pi-shared-config"
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 

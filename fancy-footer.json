@@ -1,0 +1,117 @@
+{
+  "refreshMs": 5000,
+  "iconFamily": "nerd",
+  "contextBarStyle": "bars",
+  "defaultTextColor": "text",
+  "defaultIconColor": "muted",
+  "widgets": {
+    "model": {
+      "row": 0,
+      "align": "left",
+      "position": 0,
+      "icon": "hide",
+      "textColor": "accent"
+    },
+    "thinking": {
+      "row": 0,
+      "align": "left",
+      "position": 1,
+      "icon": "hide",
+      "textColor": "muted"
+    },
+    "context-bar": {
+      "row": 0,
+      "align": "middle",
+      "position": 1,
+      "fill": "grow",
+      "minWidth": 12,
+      "icon": "hide",
+      "iconColor": "accent"
+    },
+    "context-usage": {
+      "row": 0,
+      "align": "middle",
+      "position": 0,
+      "icon": "hide",
+      "textColor": "accent"
+    },
+    "context-capacity": {
+      "row": 0,
+      "align": "middle",
+      "position": 2,
+      "icon": "hide",
+      "textColor": "muted"
+    },
+    "total-cost": {
+      "row": 0,
+      "align": "right",
+      "position": 0,
+      "iconColor": "muted",
+      "textColor": "text"
+    },
+    "location": {
+      "row": 1,
+      "align": "left",
+      "position": 0,
+      "iconColor": "accent",
+      "textColor": "accent"
+    },
+    "branch": {
+      "row": 1,
+      "align": "left",
+      "position": 1,
+      "iconColor": "success",
+      "textColor": "success"
+    },
+    "commit": {
+      "row": 1,
+      "align": "left",
+      "position": 2,
+      "textColor": "muted"
+    },
+    "git-status": {
+      "row": 1,
+      "align": "left",
+      "position": 3,
+      "textColor": "warning"
+    },
+    "diff-added": {
+      "row": 1,
+      "align": "right",
+      "position": 0,
+      "textColor": "success"
+    },
+    "diff-removed": {
+      "row": 1,
+      "align": "right",
+      "position": 1,
+      "textColor": "error"
+    },
+    "pull-request": {
+      "row": 1,
+      "align": "right",
+      "position": 2,
+      "textColor": "text"
+    },
+    "pull-request-review-threads": {
+      "row": 1,
+      "align": "right",
+      "position": 3,
+      "textColor": "warning"
+    },
+    "pull-request-ci-status": {
+      "row": 1,
+      "align": "right",
+      "position": 4,
+      "textColor": "error"
+    }
+  },
+  "extensionWidgets": {
+    "pi-tps.token-rate": {
+      "row": 0,
+      "align": "right",
+      "position": 1,
+      "textColor": "success"
+    }
+  }
+}

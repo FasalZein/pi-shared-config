@@ -22,22 +22,30 @@
   },
   "packages": [
     "npm:pi-extmgr",
-    "git:github.com/prateekmedia/pi-hooks",
-    "git:github.com/nicobailon/pi-powerline-footer",
+    {
+      "source": "git:github.com/prateekmedia/pi-hooks",
+      "extensions": [
+        "-ralph-loop/ralph-loop.ts"
+      ]
+    },
     "git:github.com/ttttmr/pi-context",
     "git:github.com/edxeth/pi-gpt-config",
     "git:github.com/edxeth/pi-ptc-next",
-    "npm:pi-executor",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
     "npm:@sting8k/pi-vcc",
     "git:github.com/edxeth/pi-better-skills",
+    "npm:pi-context-prune",
     "git:github.com/eko24ive/pi-ask",
-    "git:github.com/edxeth/pi-subagents"
+    "git:github.com/edxeth/pi-subagents",
+    "git:github.com/mavam/pi-fancy-footer",
+    "npm:pi-formatter",
+    "npm:@howaboua/pi-auto-trees",
+    "git:github.com/edxeth/pi-ralph-loop"
   ],
   "lastChangelogVersion": "0.74.0",
   "hideThinkingBlock": true,
-  "theme": "neon-glass",
+  "theme": "mocha",
   "gptConfig": {
     "fastMode": false,
     "personality": "claude",
@@ -45,18 +53,6 @@
     "summary": "auto",
     "showFooter": false,
     "toolDiscipline": "on"
-  },
-  "powerline": {
-    "preset": "default",
-    "fixedEditor": false,
-    "customItems": [
-      {
-        "id": "token-rate",
-        "statusKey": "token-rate",
-        "position": "right",
-        "color": "accent"
-      }
-    ]
   },
   "quietStartup": true,
   "tasksMode": "all",

@@ -1,1 +1,1 @@
-export { default } from "@edxeth/pi-fff/src/index.ts";
+export { default } from "@ff-labs/pi-fff/src/index.ts";

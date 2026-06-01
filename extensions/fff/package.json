@@ -1,14 +1,9 @@
 {
-  "name": "tia-pi-fff-extension",
+  "name": "pi-fff-extension",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@edxeth/pi-fff": "nightly",
-    "@edxeth/fff-node": "nightly"
-  },
-  "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "@mariozechner/pi-tui": "*",
-    "@sinclair/typebox": "*"
+    "@ff-labs/pi-fff": "0.6.4",
+    "@ff-labs/fff-node": "0.6.4"
   }
 }
