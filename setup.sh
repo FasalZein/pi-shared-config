@@ -23,8 +23,9 @@ cp APPEND_SYSTEM.md "$PI_AGENT_DIR/APPEND_SYSTEM.md"
 echo "==> Copying keybindings.json..."
 cp keybindings.json "$PI_AGENT_DIR/keybindings.json"
 
-echo "==> Copying mocha theme..."
+echo "==> Copying themes (tokyonight + mocha)..."
 mkdir -p "$PI_AGENT_DIR/themes"
+cp themes/tokyonight.json "$PI_AGENT_DIR/themes/tokyonight.json"
 cp themes/mocha.json "$PI_AGENT_DIR/themes/mocha.json"
 
 echo "==> Copying fancy-footer.json..."

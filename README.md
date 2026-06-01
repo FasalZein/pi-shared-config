@@ -27,6 +27,7 @@ That installs:
 | `extensions/eko24ive-pi-ask.json` | pi-ask keymaps, extraction models, behaviour |
 | `extensions/fff/` | FFF file finder (re-exports `@ff-labs/pi-fff`) |
 | `fancy-footer.json` | Fancy footer widget layout (rows, colors, icons) |
+| `themes/` | `tokyonight` (default) + `mocha` themes |
 | `agents/` | 8 pi-subagents definitions (scout, spec, planner, worker, reviewer, researcher, design, context-builder) — all on `rift/gpt-5.5` |
 | `setup.sh` | One-command installer |
 | `install.sh` | Standalone curl-able bootstrap (see below) |
@@ -58,6 +59,7 @@ pi-shared-config/
 ├── setup.sh               ← Full installer
 ├── install.sh             ← Standalone bootstrap script
 ├── agents/                ← pi-subagents definitions (rift/gpt-5.5)
+├── themes/                ← tokyonight (default) + mocha
 └── extensions/
     ├── cmux/index.ts
     ├── pi-tps.ts

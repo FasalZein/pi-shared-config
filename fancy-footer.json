@@ -9,15 +9,15 @@
       "row": 0,
       "align": "left",
       "position": 0,
-      "icon": "hide",
-      "textColor": "accent"
+      "textColor": "accent",
+      "icon": "hide"
     },
     "thinking": {
       "row": 0,
       "align": "left",
       "position": 1,
-      "icon": "hide",
-      "textColor": "muted"
+      "textColor": "muted",
+      "icon": "hide"
     },
     "context-bar": {
       "row": 0,
@@ -32,15 +32,15 @@
       "row": 0,
       "align": "middle",
       "position": 0,
-      "icon": "hide",
-      "textColor": "accent"
+      "textColor": "accent",
+      "icon": "hide"
     },
     "context-capacity": {
       "row": 0,
       "align": "middle",
       "position": 2,
-      "icon": "hide",
-      "textColor": "muted"
+      "textColor": "muted",
+      "icon": "hide"
     },
     "total-cost": {
       "row": 0,
@@ -77,32 +77,32 @@
     },
     "diff-added": {
       "row": 1,
-      "align": "right",
+      "align": "middle",
       "position": 0,
       "textColor": "success"
     },
     "diff-removed": {
       "row": 1,
-      "align": "right",
+      "align": "middle",
       "position": 1,
       "textColor": "error"
     },
     "pull-request": {
       "row": 1,
       "align": "right",
-      "position": 2,
+      "position": 0,
       "textColor": "text"
     },
     "pull-request-review-threads": {
       "row": 1,
       "align": "right",
-      "position": 3,
+      "position": 1,
       "textColor": "warning"
     },
     "pull-request-ci-status": {
       "row": 1,
       "align": "right",
-      "position": 4,
+      "position": 2,
       "textColor": "error"
     }
   },
