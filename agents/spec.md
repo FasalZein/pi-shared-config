@@ -1,11 +1,11 @@
 ---
 name: spec
 description: Interactive spec agent - clarifies intent, requirements, effort level, and success criteria. Answers "WHAT are we building?" so the planner can focus on HOW.
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read,grep,find,ls,bash,write
 skills: wiki, grill-with-docs, improve-codebase-architecture, write-a-prd
 inject-skills: wiki, grill-with-docs, write-a-prd
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: medium
 mode: interactive
 auto-exit: false

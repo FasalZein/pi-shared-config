@@ -1,11 +1,11 @@
 {
-  "defaultProvider": "rift",
+  "defaultProvider": "codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "medium",
   "enabledModels": [
-    "rift/*"
+    "codex/*"
   ],
-  "transport": "websocket-cached",
+  "transport": "sse",
   "npmCommand": [
     "env",
     "NPM_CONFIG_MIN_RELEASE_AGE=0",
@@ -25,12 +25,13 @@
     {
       "source": "git:github.com/prateekmedia/pi-hooks",
       "extensions": [
-        "-ralph-loop/ralph-loop.ts"
+        "-ralph-loop/ralph-loop.ts",
+        "-lsp/lsp.ts",
+        "-lsp/lsp-tool.ts"
       ]
     },
     "git:github.com/ttttmr/pi-context",
     "git:github.com/edxeth/pi-gpt-config",
-    "git:github.com/edxeth/pi-ptc-next",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
     "npm:@sting8k/pi-vcc",
@@ -41,7 +42,8 @@
     "git:github.com/mavam/pi-fancy-footer",
     "npm:pi-formatter",
     "npm:@howaboua/pi-auto-trees",
-    "git:github.com/edxeth/pi-ralph-loop"
+    "git:github.com/edxeth/pi-ralph-loop",
+    "npm:@ff-labs/pi-fff@0.6.4"
   ],
   "lastChangelogVersion": "0.74.0",
   "hideThinkingBlock": true,

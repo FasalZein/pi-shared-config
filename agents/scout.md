@@ -1,10 +1,10 @@
 ---
 name: scout
 description: Fast codebase reconnaissance - gathers context without making changes
-extensions: git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read,grep,find,ls,bash,write
 skills: none
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: high
 mode: background
 auto-exit: true

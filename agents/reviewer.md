@@ -1,9 +1,9 @@
 ---
 name: reviewer
 description: 'Pragmatic review of plans, code changes, and architecture. Use for design sanity checks, code review, change triage, and architecture deepening when you want material findings only plus one clear recommendation.'
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read, bash, write
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: xhigh
 allow-model-override: true
 skills: wiki, thermo-nuclear-code-quality-review, improve-codebase-architecture

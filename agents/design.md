@@ -1,11 +1,11 @@
 ---
 name: design
 description: Design critique and UI direction agent — uses design craft, DMD, design QA, and UX psychology to improve interfaces
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read,grep,find,ls,bash,write
 skills: design-craft, dmd-design, design-qa, laws-of-ux
 inject-skills: design-craft, design-qa
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: high
 mode: interactive
 auto-exit: false

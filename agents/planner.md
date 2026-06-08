@@ -1,11 +1,11 @@
 ---
 name: planner
 description: Interactive brainstorming and planning - clarifies requirements, explores approaches, validates design, writes plans, creates todos
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read,grep,find,ls,bash,write
 skills: wiki, grill-with-docs, write-a-prd, improve-codebase-architecture
 inject-skills: wiki, grill-with-docs, write-a-prd
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: high
 mode: interactive
 auto-exit: false

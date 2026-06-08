@@ -2,71 +2,82 @@
 set -euo pipefail
 
 PI_AGENT_DIR="${PI_AGENT_DIR:-$HOME/.pi/agent}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_CODEX_LB_SETUP="${RUN_CODEX_LB_SETUP:-false}"
+INSTALL_PI_PACKAGES="${INSTALL_PI_PACKAGES:-true}"
+
+copy_file() {
+  local src="$1"
+  local dst="$2"
+  mkdir -p "$(dirname "$dst")"
+  cp "$src" "$dst"
+}
+
+copy_dir_contents() {
+  local src="$1"
+  local dst="$2"
+  mkdir -p "$dst"
+  cp -R "$src"/. "$dst"/
+}
 
 echo "==> pi-shared-config setup"
+echo "    target: $PI_AGENT_DIR"
 echo ""
 
 # --- Config files ---
-echo "==> Copying models.json..."
+echo "==> Copying Pi config files..."
 mkdir -p "$PI_AGENT_DIR"
-cp models.json "$PI_AGENT_DIR/models.json"
+copy_file "$SCRIPT_DIR/models.json" "$PI_AGENT_DIR/models.json"
+copy_file "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json"
+copy_file "$SCRIPT_DIR/AGENTS.md" "$PI_AGENT_DIR/AGENTS.md"
+copy_file "$SCRIPT_DIR/APPEND_SYSTEM.md" "$PI_AGENT_DIR/APPEND_SYSTEM.md"
+copy_file "$SCRIPT_DIR/keybindings.json" "$PI_AGENT_DIR/keybindings.json"
+copy_file "$SCRIPT_DIR/fancy-footer.json" "$PI_AGENT_DIR/fancy-footer.json"
 
-echo "==> Copying settings.json..."
-cp settings.json "$PI_AGENT_DIR/settings.json"
+# --- Themes ---
+echo "==> Copying themes..."
+copy_dir_contents "$SCRIPT_DIR/themes" "$PI_AGENT_DIR/themes"
 
-echo "==> Copying AGENTS.md..."
-cp AGENTS.md "$PI_AGENT_DIR/AGENTS.md"
-
-echo "==> Copying APPEND_SYSTEM.md..."
-cp APPEND_SYSTEM.md "$PI_AGENT_DIR/APPEND_SYSTEM.md"
-
-echo "==> Copying keybindings.json..."
-cp keybindings.json "$PI_AGENT_DIR/keybindings.json"
-
-echo "==> Copying themes (tokyonight + mocha)..."
-mkdir -p "$PI_AGENT_DIR/themes"
-cp themes/tokyonight.json "$PI_AGENT_DIR/themes/tokyonight.json"
-cp themes/mocha.json "$PI_AGENT_DIR/themes/mocha.json"
-
-echo "==> Copying fancy-footer.json..."
-cp fancy-footer.json "$PI_AGENT_DIR/fancy-footer.json"
-
+# --- Subagents ---
 echo "==> Copying subagent definitions..."
-mkdir -p "$PI_AGENT_DIR/agents"
-cp agents/*.md "$PI_AGENT_DIR/agents/"
+copy_dir_contents "$SCRIPT_DIR/agents" "$PI_AGENT_DIR/agents"
 
-# --- Pi package (extensions auto-load) ---
-echo "==> Installing pi package (extensions)..."
-pi install . 2>/dev/null || echo "    (run 'pi install .' from repo root after pi is configured)"
+# --- Local extensions ---
+# Copy explicitly so standalone install.sh can clone into a temp dir and delete it afterwards.
+# Do not add this repo as a local Pi package path; that path may not exist later.
+echo "==> Copying local extensions..."
+mkdir -p "$PI_AGENT_DIR/extensions/cmux"
+copy_file "$SCRIPT_DIR/extensions/cmux/index.ts" "$PI_AGENT_DIR/extensions/cmux/index.ts"
+copy_file "$SCRIPT_DIR/extensions/pi-tps.ts" "$PI_AGENT_DIR/extensions/pi-tps.ts"
+copy_file "$SCRIPT_DIR/extensions/eko24ive-pi-ask.json" "$PI_AGENT_DIR/extensions/eko24ive-pi-ask.json"
 
-# --- Install other pi packages ---
-echo "==> Installing pi packages..."
-for pkg in \
-  "npm:pi-extmgr" \
-  "git:github.com/prateekmedia/pi-hooks" \
-  "git:github.com/ttttmr/pi-context" \
-  "git:github.com/edxeth/pi-gpt-config" \
-  "git:github.com/edxeth/pi-ptc-next" \
-  "git:github.com/edxeth/pi-tasks" \
-  "npm:@tomooshi/condensed-milk-pi" \
-  "npm:@sting8k/pi-vcc" \
-  "git:github.com/edxeth/pi-better-skills" \
-  "npm:pi-context-prune" \
-  "git:github.com/eko24ive/pi-ask" \
-  "git:github.com/edxeth/pi-subagents" \
-  "git:github.com/mavam/pi-fancy-footer" \
-  "npm:pi-formatter" \
-  "npm:@howaboua/pi-auto-trees" \
-  "git:github.com/edxeth/pi-ralph-loop"; do
-  echo "  Installing $pkg..."
-  pi install "$pkg" 2>/dev/null || echo "  (skip — pi not fully configured yet)"
-done
+# The FFF extension is installed as npm:@ff-labs/pi-fff from settings.json.
+# The old local wrapper imported an internal package path and failed on some machines.
+rm -rf "$PI_AGENT_DIR/extensions/fff"
+
+# --- Optional package reconciliation ---
+# settings.json is the source of truth. `pi update --extensions` respects package filters
+# while raw `pi install <pkg>` could re-add broken default extension entries.
+if [[ "$INSTALL_PI_PACKAGES" == "true" ]] && command -v pi >/dev/null 2>&1; then
+  echo "==> Reconciling Pi packages from settings.json..."
+  pi update --extensions 2>/dev/null || echo "    (skip — pi packages will install/reconcile on next pi startup)"
+else
+  echo "==> Skipping Pi package reconciliation"
+fi
+
+# --- Optional codex-lb setup ---
+if [[ "$RUN_CODEX_LB_SETUP" == "true" ]]; then
+  echo "==> Running codex-lb beta setup..."
+  bash "$SCRIPT_DIR/scripts/setup-codex-lb-beta.sh" --configure-pi --import-rift
+else
+  echo "==> codex-lb setup not run automatically"
+  echo "    To install/start codex-lb beta separately:"
+  echo "      bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift"
+fi
 
 echo ""
 echo "==> Done!"
 echo ""
-echo "    Next step:"
-echo "      pi"
-echo ""
-echo "    Note: Rift API key is baked into Rift itself — no need to change it."
-echo "    Just make sure Rift is running on http://127.0.0.1:7439/v1"
+echo "    Pi is configured for codex-lb at http://127.0.0.1:2455/v1"
+echo "    Start codex-lb separately if it is not already running:"
+echo "      bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift"

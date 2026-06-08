@@ -1,13 +1,13 @@
 {
   "providers": {
-    "rift": {
-      "api": "openai-codex-responses",
-      "baseUrl": "http://127.0.0.1:7439/v1",
-      "apiKey": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoicmlmdCJ9fQ.rift",
+    "codex": {
+      "api": "openai-responses",
+      "baseUrl": "http://127.0.0.1:2455/v1",
+      "apiKey": "dummy",
       "models": [
         {
           "id": "gpt-5.5",
-          "name": "Rift GPT-5.5",
+          "name": "Codex GPT-5.5",
           "contextWindow": 272000,
           "maxTokens": 128000,
           "reasoning": true,
@@ -29,7 +29,7 @@
         },
         {
           "id": "gpt-5.4",
-          "name": "Rift GPT-5.4",
+          "name": "Codex GPT-5.4",
           "contextWindow": 272000,
           "maxTokens": 128000,
           "reasoning": true,
@@ -51,7 +51,7 @@
         },
         {
           "id": "gpt-5.4-mini",
-          "name": "Rift GPT-5.4 Mini",
+          "name": "Codex GPT-5.4 Mini",
           "contextWindow": 272000,
           "maxTokens": 128000,
           "reasoning": true,
@@ -73,7 +73,7 @@
         },
         {
           "id": "gpt-5.3-codex",
-          "name": "Rift GPT-5.3-Codex",
+          "name": "Codex GPT-5.3-Codex",
           "contextWindow": 272000,
           "maxTokens": 128000,
           "reasoning": true,

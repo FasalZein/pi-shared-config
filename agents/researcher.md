@@ -1,7 +1,7 @@
 ---
 name: researcher
 description: Autonomous researcher — uses research, exa, firecrawl, and tinyfish skills to produce a written brief
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: high
 extensions: git:github.com/edxeth/pi-better-skills
 tools: bash,write,read,grep,find

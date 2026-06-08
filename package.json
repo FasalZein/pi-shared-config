@@ -1,20 +1,20 @@
 {
   "name": "pi-shared-config",
-  "version": "1.0.0",
-  "description": "Pi coding agent shared configuration — Rift provider + extensions for cmux, TPS, pi-ask, FFF, and fancy footer",
+  "version": "1.1.0",
+  "description": "Pi coding agent shared configuration — codex-lb provider + curated extensions for cmux, TPS, pi-ask, FFF, and fancy footer",
   "keywords": ["pi-package"],
   "type": "module",
-  "dependencies": {
-    "@ff-labs/pi-fff": "0.6.4",
-    "@ff-labs/fff-node": "0.6.4"
-  },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-agent-core": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*",
-    "@sinclair/typebox": "*"
+    "typebox": "*"
   },
   "pi": {
-    "extensions": ["./extensions"]
+    "extensions": [
+      "./extensions/cmux/index.ts",
+      "./extensions/pi-tps.ts"
+    ]
   }
 }

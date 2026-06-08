@@ -1,11 +1,11 @@
 ---
 name: worker
 description: Implements tasks from todos - writes code, runs tests, commits with polished messages
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-ptc-next, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer
 tools: read,grep,find,ls,bash,edit,write
 skills: wiki, tdd, diagnose
 inject-skills: wiki, tdd
-model: rift/gpt-5.5
+model: codex/gpt-5.5
 thinking: medium
 mode: background
 auto-exit: true
