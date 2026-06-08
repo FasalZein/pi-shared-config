@@ -162,6 +162,49 @@ The importer accepts both:
 
 During import, flat files are converted temporarily into codex-lb auth JSON shape, uploaded to the local codex-lb API, and then deleted. Existing codex-lb accounts are checked first so duplicate account IDs or duplicate emails are skipped.
 
+## Managing codex-lb per-account proxies
+
+Keep proxy secrets in a local text file, not in this repo. One proxy per line:
+
+```text
+username:password:host:port
+```
+
+Example location:
+
+```bash
+mkdir -p ~/.codex-lb
+chmod 700 ~/.codex-lb
+$EDITOR ~/.codex-lb/proxies.txt
+chmod 600 ~/.codex-lb/proxies.txt
+```
+
+Set up/test proxies, prune unauthenticated accounts, bind active accounts evenly across proxy pools, and restart codex-lb:
+
+```bash
+bash scripts/codex-lb-proxy-admin.sh \
+  --proxies-file ~/.codex-lb/proxies.txt \
+  --reset-proxies \
+  --test-proxies \
+  --prune-reauth \
+  --bind-active \
+  --restart
+```
+
+Re-bind active accounts later without recreating proxies:
+
+```bash
+bash scripts/codex-lb-proxy-admin.sh --bind-active --restart
+```
+
+Canary only the first 10 active accounts:
+
+```bash
+bash scripts/codex-lb-proxy-admin.sh --bind-active --bind-limit 10 --restart
+```
+
+The helper keeps global proxy routing disabled by default and uses per-account bindings. That is safer than global routing because one missing/default pool does not break every account.
+
 ## Running codex-lb separately from Pi
 
 Pi and codex-lb are separate processes.
@@ -215,6 +258,8 @@ pi-shared-config/
 ├── models.json
 ├── package.json
 ├── scripts/
+│   ├── codex-lb-proxy-admin.py
+│   ├── codex-lb-proxy-admin.sh
 │   └── setup-codex-lb-beta.sh
 ├── settings.json
 ├── setup.sh
