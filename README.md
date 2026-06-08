@@ -1,187 +1,274 @@
 # pi-shared-config
 
-One-command setup for [pi coding agent](https://pi.dev) with a local **codex-lb beta** provider and curated extensions.
+Shared configuration for [Pi](https://pi.dev): provider models, settings, themes, keybindings, subagents, and a small set of extensions.
 
-This config no longer uses Rift by default. Rift caused account health/routing issues for our setup, so the shared default is now codex-lb on `http://127.0.0.1:2455/v1` with Pi transport set to `sse`.
+This repo is meant to make a fresh Pi install feel ready to use quickly. It also includes an optional helper for running [codex-lb](https://github.com/Soju06/codex-lb) locally as the default Codex/OpenAI-compatible provider.
 
-## Quick start
+## What this installs
 
-```bash
-git clone https://github.com/FasalZein/pi-shared-config
-cd pi-shared-config
-bash setup.sh
-```
+| Area | What is included |
+| --- | --- |
+| Providers | `codex` provider pointed at `http://127.0.0.1:2455/v1` |
+| Models | GPT-5.5, GPT-5.4, GPT-5.4 Mini, GPT-5.3-Codex |
+| Pi settings | SSE transport, enabled `codex/*`, curated packages |
+| Themes | `tokyonight` and `mocha` |
+| Keybindings | Shared keybinding defaults |
+| Subagents | scout, spec, planner, worker, reviewer, researcher, design, context-builder |
+| Extensions | cmux status, token-rate footer, pi-ask config, FFF via npm package |
+| Footer | shared fancy-footer layout |
+| Optional service | codex-lb beta installer/importer for local account load balancing |
 
-That installs Pi config only. It is safe to run while Pi is already installed; it overwrites the shared config files in `~/.pi/agent` but does not start Pi or run inference.
+No real API keys or account tokens are stored in this repo.
 
-To install/start codex-lb beta too:
+## Requirements
 
-```bash
-bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift
-```
-
-## Full setup with accounts
-
-Most friends should run this from the cloned repo:
-
-```bash
-bash setup.sh
-bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift
-```
-
-This does four things:
-
-1. clones or updates `Soju06/codex-lb`
-2. checks out the newest `origin/release/beta-*` branch
-3. builds frontend assets and runs codex-lb in the background with launchd on macOS
-4. imports accounts from `~/.rift/accounts/codex` if that folder exists
-
-Dashboard:
-
-```text
-http://127.0.0.1:2455/
-```
-
-Health check:
+Install Pi first:
 
 ```bash
-curl http://127.0.0.1:2455/health
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 ```
 
-## Importing accounts
-
-The setup script supports two account formats:
-
-1. **Rift/flat JSON** — top-level `access_token`, `refresh_token`, `id_token`, `account_id`
-2. **Codex/codex-lb auth JSON** — nested `tokens` object
-
-The script does not print token values. Temporary converted files are written under `~/.codex-lb/tmp-import` with private permissions and deleted after import.
-
-### Import existing Rift accounts
-
-```bash
-bash scripts/setup-codex-lb-beta.sh --import-rift
-```
-
-This imports from:
-
-```text
-~/.rift/accounts/codex
-```
-
-### Import an extra folder
-
-```bash
-bash scripts/setup-codex-lb-beta.sh --accounts-dir ~/Downloads/codex-6
-```
-
-You can pass multiple folders:
-
-```bash
-bash scripts/setup-codex-lb-beta.sh \
-  --accounts-dir ~/Downloads/codex-6 \
-  --accounts-dir ~/Downloads/more-codex-accounts
-```
-
-### Import accounts and patch Pi config together
-
-```bash
-bash scripts/setup-codex-lb-beta.sh \
-  --configure-pi \
-  --import-rift \
-  --accounts-dir ~/Downloads/codex-6
-```
-
-### Idempotency
-
-The script is designed to be safe to re-run:
-
-- existing codex-lb repo is fetched and checked out only if clean
-- launchd service is replaced/restarted using the same label
-- codex-lb database migrations run to all beta heads
-- account import checks existing codex-lb accounts and skips duplicate account IDs/emails
-- Pi config files are backed up before patching when they already exist
-
-## Running codex-lb separately
-
-If Pi is already running or already installed, codex-lb can be installed/started independently:
-
-```bash
-bash scripts/setup-codex-lb-beta.sh
-```
-
-Then separately patch Pi config:
-
-```bash
-bash scripts/setup-codex-lb-beta.sh --configure-pi --no-start
-```
-
-Or run only Pi config setup:
-
-```bash
-bash setup.sh
-```
-
-## What's included
-
-| Path | Description |
-|------|-------------|
-| `models.json` | `codex` provider pointed at `http://127.0.0.1:2455/v1` using normal OpenAI Responses API |
-| `settings.json` | Global settings — default provider `codex`, enabled `codex/*`, transport `sse` |
-| `package.json` | Pi package manifest — only stable local extensions are auto-loaded |
-| `extensions/cmux/` | cmux terminal status bar |
-| `extensions/pi-tps.ts` | Token rate footer display |
-| `extensions/eko24ive-pi-ask.json` | pi-ask config copied as a config asset |
-| `fancy-footer.json` | Fancy footer widget layout |
-| `themes/` | `tokyonight` default + `mocha` theme |
-| `agents/` | pi-subagent definitions using `codex/gpt-5.5` |
-| `setup.sh` | Idempotent Pi config installer |
-| `install.sh` | Standalone curl-able bootstrap |
-| `scripts/setup-codex-lb-beta.sh` | Standalone codex-lb beta installer/importer |
-
-## Fixed install issues
-
-This version avoids the install errors seen on a friend's machine:
-
-- excludes broken `pi-hooks` LSP extensions that import `vscode-languageserver-protocol/node.js`
-- does not install `pi-ptc-next` by default, avoiding the sandbox runtime error
-- uses `npm:@ff-labs/pi-fff@0.6.4` directly instead of a local wrapper path that can disappear after temp bootstrap install
-- configures Pi transport as `sse`, not WebSocket cached transport
-
-## Standalone bootstrap without keeping the repo clone
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
-```
-
-That installs Pi config. To install codex-lb and import accounts, use a normal clone so the reusable script remains available:
-
-```bash
-git clone https://github.com/FasalZein/pi-shared-config
-cd pi-shared-config
-bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift
-```
-
-## Manual requirements
-
-You need:
-
-- `pi`
-- `git`
-- `uv`
-- `bun`
-- `curl`
-- macOS for launchd background service support
-
-Install `uv` and `bun` if missing:
+For the optional codex-lb setup, also install:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 curl -fsSL https://bun.sh/install | bash
 ```
 
-## Notes
+You also need `git` and `curl`. The background service helper currently installs a macOS `launchd` service.
 
-- No real secrets are stored in this repo.
-- `apiKey` is set to `dummy` because codex-lb local proxy accepts a placeholder unless dashboard API-key auth is enabled.
-- The codex-lb setup script disables live usage refresh by default. It does not run inference.
+## Install the Pi configuration
+
+Clone the repo and run the setup script:
+
+```bash
+git clone https://github.com/FasalZein/pi-shared-config
+cd pi-shared-config
+bash setup.sh
+```
+
+This copies config files into `~/.pi/agent`:
+
+- `models.json`
+- `settings.json`
+- `AGENTS.md`
+- `APPEND_SYSTEM.md`
+- `keybindings.json`
+- themes
+- subagent definitions
+- local extensions
+- `fancy-footer.json`
+
+The script is safe to re-run. It overwrites the shared config files with the repo versions and leaves account credentials alone.
+
+## Optional: set up codex-lb
+
+The default provider in this config is named `codex` and points to:
+
+```text
+http://127.0.0.1:2455/v1
+```
+
+To make that endpoint available locally, run:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh --configure-pi
+```
+
+This helper:
+
+1. clones or updates `Soju06/codex-lb`
+2. checks out the newest `origin/release/beta-*` branch
+3. installs Python dependencies with `uv`
+4. builds the frontend with `bun`
+5. writes a local HTTP/SSE-oriented `.env.local`
+6. runs database migrations
+7. installs/restarts a macOS launchd service
+8. verifies `http://127.0.0.1:2455/health`
+
+Open the dashboard at:
+
+```text
+http://127.0.0.1:2455/
+```
+
+codex-lb is configured for HTTP/SSE by default, not WebSocket transport.
+
+## Import accounts into codex-lb
+
+The codex-lb setup script can import account JSON files without printing token values.
+
+### Import from the default Rift account folder
+
+If the machine already has Rift-style account files at `~/.rift/accounts/codex`, run:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh --import-rift
+```
+
+### Import from any folder
+
+Use `--accounts-dir` for any directory containing account JSON files:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh --accounts-dir /path/to/account-json-folder
+```
+
+You can pass it multiple times:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh \
+  --accounts-dir /path/to/accounts-a \
+  --accounts-dir /path/to/accounts-b
+```
+
+### Install codex-lb, configure Pi, and import accounts together
+
+```bash
+bash scripts/setup-codex-lb-beta.sh \
+  --configure-pi \
+  --import-rift \
+  --accounts-dir /path/to/extra-account-json-folder
+```
+
+### Supported account input formats
+
+The importer accepts both:
+
+1. Flat Rift-style JSON:
+
+```json
+{
+  "access_token": "...",
+  "refresh_token": "...",
+  "id_token": "...",
+  "account_id": "..."
+}
+```
+
+2. Codex/codex-lb auth JSON:
+
+```json
+{
+  "auth_mode": "chatgpt",
+  "tokens": {
+    "access_token": "...",
+    "refresh_token": "...",
+    "id_token": "...",
+    "account_id": "..."
+  }
+}
+```
+
+During import, flat files are converted temporarily into codex-lb auth JSON shape, uploaded to the local codex-lb API, and then deleted. Existing codex-lb accounts are checked first so duplicate account IDs or duplicate emails are skipped.
+
+## Running codex-lb separately from Pi
+
+Pi and codex-lb are separate processes.
+
+If Pi is already installed or currently running, you can set up codex-lb by itself:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh
+```
+
+Then patch Pi config later:
+
+```bash
+bash scripts/setup-codex-lb-beta.sh --configure-pi --no-start
+```
+
+Or install only the Pi config without touching codex-lb:
+
+```bash
+bash setup.sh
+```
+
+## Idempotency and safety
+
+The scripts are designed for repeated runs:
+
+- existing codex-lb checkout is reused if clean
+- dirty codex-lb checkouts are not overwritten
+- launchd service is replaced/restarted under the same label
+- migrations run to all beta heads
+- account import skips existing account IDs/emails
+- temporary converted account files are removed after import
+- Pi config patching creates timestamped backups when files already exist
+- token values are not printed
+
+## Installed files
+
+```text
+pi-shared-config/
+├── AGENTS.md
+├── APPEND_SYSTEM.md
+├── README.md
+├── agents/
+├── extensions/
+│   ├── cmux/index.ts
+│   ├── eko24ive-pi-ask.json
+│   └── pi-tps.ts
+├── fancy-footer.json
+├── install.sh
+├── keybindings.json
+├── models.json
+├── package.json
+├── scripts/
+│   └── setup-codex-lb-beta.sh
+├── settings.json
+├── setup.sh
+└── themes/
+```
+
+## Standalone bootstrap
+
+For Pi config only:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
+```
+
+For codex-lb setup and account import, use a persistent clone so the helper script remains available:
+
+```bash
+git clone https://github.com/FasalZein/pi-shared-config
+cd pi-shared-config
+bash scripts/setup-codex-lb-beta.sh --configure-pi --import-rift
+```
+
+## Troubleshooting
+
+### `http://127.0.0.1:2455` does not load
+
+Check health:
+
+```bash
+curl http://127.0.0.1:2455/health
+```
+
+Check logs:
+
+```bash
+cat ~/.codex-lb/launchd.err.log
+cat ~/.codex-lb/launchd.out.log
+```
+
+### Pi still shows old provider names
+
+Restart Pi after changing `models.json` or `settings.json`.
+
+### Re-run package reconciliation
+
+```bash
+pi update --extensions
+```
+
+## Notes on extension choices
+
+This config avoids a few known startup problems:
+
+- broken `pi-hooks` LSP extension entries are excluded
+- `pi-ptc-next` is not installed by default because it requires an explicit sandbox/runtime choice
+- FFF is installed through `npm:@ff-labs/pi-fff@0.6.4` instead of a local wrapper path
+- Pi transport is set to `sse`
