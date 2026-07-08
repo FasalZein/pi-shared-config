@@ -1,9 +1,0 @@
-{
-  "name": "pi-fff-extension",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@ff-labs/pi-fff": "0.6.4",
-    "@ff-labs/fff-node": "0.6.4"
-  }
-}

@@ -1,7 +1,7 @@
 {
   "name": "pi-shared-config",
-  "version": "1.1.0",
-  "description": "Pi coding agent shared configuration — codex-lb provider + curated extensions for cmux, TPS, pi-ask, FFF, and fancy footer",
+  "version": "1.2.0",
+  "description": "Pi coding agent shared configuration — current subagents, curated packages, and local UI extensions without provider credentials",
   "keywords": ["pi-package"],
   "type": "module",
   "peerDependencies": {
@@ -14,7 +14,9 @@
   "pi": {
     "extensions": [
       "./extensions/cmux/index.ts",
-      "./extensions/pi-tps.ts"
+      "./extensions/pi-tps.ts",
+      "./extensions/full-context-bar.ts",
+      "./extensions/morph-indicator.ts"
     ]
   }
 }

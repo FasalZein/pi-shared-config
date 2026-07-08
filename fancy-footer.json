@@ -1,10 +1,16 @@
 {
   "refreshMs": 5000,
   "iconFamily": "nerd",
-  "contextBarStyle": "bars",
+  "gaugeStyle": "bars",
   "defaultTextColor": "text",
   "defaultIconColor": "muted",
   "widgets": {
+    "context-bar": {
+      "enabled": false
+    },
+    "context-capacity": {
+      "enabled": false
+    },
     "model": {
       "row": 0,
       "align": "left",
@@ -16,29 +22,6 @@
       "row": 0,
       "align": "left",
       "position": 1,
-      "textColor": "muted",
-      "icon": "hide"
-    },
-    "context-bar": {
-      "row": 0,
-      "align": "middle",
-      "position": 1,
-      "fill": "grow",
-      "minWidth": 12,
-      "icon": "hide",
-      "iconColor": "accent"
-    },
-    "context-usage": {
-      "row": 0,
-      "align": "middle",
-      "position": 0,
-      "textColor": "accent",
-      "icon": "hide"
-    },
-    "context-capacity": {
-      "row": 0,
-      "align": "middle",
-      "position": 2,
       "textColor": "muted",
       "icon": "hide"
     },
@@ -63,18 +46,6 @@
       "iconColor": "success",
       "textColor": "success"
     },
-    "commit": {
-      "row": 1,
-      "align": "left",
-      "position": 4,
-      "textColor": "muted"
-    },
-    "git-status": {
-      "row": 1,
-      "align": "left",
-      "position": 5,
-      "textColor": "warning"
-    },
     "diff-added": {
       "row": 1,
       "align": "left",
@@ -86,6 +57,18 @@
       "align": "left",
       "position": 3,
       "textColor": "error"
+    },
+    "commit": {
+      "row": 1,
+      "align": "left",
+      "position": 4,
+      "textColor": "muted"
+    },
+    "git-status": {
+      "row": 1,
+      "align": "left",
+      "position": 5,
+      "textColor": "warning"
     },
     "pull-request": {
       "row": 1,
@@ -107,6 +90,14 @@
     }
   },
   "extensionWidgets": {
+    "pi-shared.full-context-bar": {
+      "row": 0,
+      "align": "middle",
+      "position": 0,
+      "fill": "grow",
+      "minWidth": 20,
+      "icon": "hide"
+    },
     "pi-tps.token-rate": {
       "row": 0,
       "align": "right",

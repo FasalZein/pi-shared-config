@@ -1,10 +1,5 @@
 {
-  "defaultProvider": "codex",
-  "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "medium",
-  "enabledModels": [
-    "codex/*"
-  ],
   "transport": "sse",
   "npmCommand": [
     "env",
@@ -21,42 +16,61 @@
     "enabled": true
   },
   "packages": [
-    "npm:pi-extmgr",
     {
       "source": "git:github.com/prateekmedia/pi-hooks",
       "extensions": [
-        "-ralph-loop/ralph-loop.ts",
-        "-lsp/lsp.ts",
-        "-lsp/lsp-tool.ts"
+        "-ralph-loop/ralph-loop.ts"
       ]
     },
     "git:github.com/ttttmr/pi-context",
     "git:github.com/edxeth/pi-gpt-config",
+    "git:github.com/edxeth/pi-ptc-next",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
-    "npm:@sting8k/pi-vcc",
     "git:github.com/edxeth/pi-better-skills",
-    "npm:pi-context-prune",
     "git:github.com/eko24ive/pi-ask",
     "git:github.com/edxeth/pi-subagents",
     "git:github.com/mavam/pi-fancy-footer",
-    "npm:pi-formatter",
     "npm:@howaboua/pi-auto-trees",
+    {
+      "source": "git:github.com/DietrichGebert/ponytail",
+      "skills": [
+        "-skills/ponytail/SKILL.md",
+        "-skills/ponytail-audit/SKILL.md",
+        "-skills/ponytail-debt/SKILL.md",
+        "-skills/ponytail-gain/SKILL.md",
+        "-skills/ponytail-help/SKILL.md"
+      ]
+    },
+    "npm:@hsingjui/pi-hooks",
+    "git:github.com/nicobailon/visual-explainer",
+    "npm:pi-mcp-adapter",
     "git:github.com/edxeth/pi-ralph-loop",
-    "npm:@ff-labs/pi-fff@0.6.4"
+    "git:github.com/edxeth/pi-claude-auth",
+    "https://github.com/vvv850/pi-pretty-codeblocks"
   ],
-  "lastChangelogVersion": "0.74.0",
   "hideThinkingBlock": true,
   "theme": "tokyonight",
   "gptConfig": {
     "fastMode": false,
-    "personality": "claude",
+    "personality": "friendly",
     "verbosity": "low",
     "summary": "auto",
     "showFooter": false,
     "toolDiscipline": "on"
   },
+  "powerline": {
+    "preset": "default",
+    "fixedEditor": false,
+    "customItems": [
+      {
+        "id": "token-rate",
+        "statusKey": "token-rate",
+        "position": "right",
+        "color": "accent"
+      }
+    ]
+  },
   "quietStartup": true,
-  "tasksMode": "all",
-  "permissionLevel": "high"
+  "tasksMode": "open"
 }

@@ -1,20 +1,7 @@
 {
   "schemaVersion": 5,
   "answer": {
-    "extractionModels": [
-      {
-        "provider": "openai-codex",
-        "id": "gpt-5.4-mini"
-      },
-      {
-        "provider": "github-copilot",
-        "id": "gpt-5.4-mini"
-      },
-      {
-        "provider": "anthropic",
-        "id": "claude-haiku-4-5"
-      }
-    ],
+    "extractionModels": [],
     "extractionRetries": 1,
     "extractionTimeoutMs": 30000
   },
