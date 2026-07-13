@@ -14,7 +14,7 @@ The repo avoids personal credentials and machine-specific provider routes. Exist
 | Themes | `tokyonight` and `mocha` |
 | Keybindings | Shared keybinding defaults |
 | Subagents | architect, design, researcher, reviewer, scout, worker, scout report template |
-| Subagent skills | PRD shaping, design, research, implementation, and review workflows required by the bundled agents |
+| Subagent skills | PRD shaping and slicing, design, research, implementation, and review workflows required by the bundled agents |
 | Extensions | token-rate footer, morphing working indicator, pi-ask config |
 | Footer | `pi-fancy-footer` with native full-width context and capacity widgets |
 
@@ -43,6 +43,7 @@ The setup script:
 - installs the CPA model template only when `models.json` is missing;
 - preserves existing providers and credentials;
 - reconciles the shared package list while preserving personal settings and packages;
+- updates shared subagent behavior while preserving each existing agent's `model` and `allowed-models` routing;
 - installs all skills explicitly required by bundled subagents, while retaining an existing personal/global copy with the same name;
 - copies shared instructions, agents, themes, keybindings, footer config, and local extensions;
 - removes the old repo-installed `full-context-bar` patch and CMUX integration;
@@ -100,7 +101,7 @@ pi-shared-config/
 ├── package.json
 ├── scripts/merge-settings.mjs
 ├── skills/
-│   ├── grill-with-docs/, grilling/, domain-modeling/, and to-prd/
+│   ├── grill-with-docs/, grilling/, domain-modeling/, to-prd/, and to-slices/
 │   ├── design-craft/, impeccable/, laws-of-ux/, design-md/, design-qa/
 │   ├── make-interfaces-feel-better/
 │   ├── research/, exa/, firecrawl/, tinyfish/

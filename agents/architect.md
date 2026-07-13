@@ -2,8 +2,8 @@
 name: architect
 description: Interactive architect agent - grills a fuzzy idea into a defined, de-risked, documented PRD. Owns WHAT; Ralph loops own HOW. Invoke it to shape work before a loop.
 extensions: all
-tools: read,grep,find,ls,bash,write
-skills: all
+tools: read,grep,find,ls,bash,write,ask_user
+skills: grill-with-docs, grilling, domain-modeling, to-prd, to-slices
 inject-skills: grill-with-docs, to-prd
 thinking: xhigh
 allow-model-override: true

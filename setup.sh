@@ -63,8 +63,16 @@ copy_file "$SCRIPT_DIR/fancy-footer.json" "$PI_AGENT_DIR/fancy-footer.json"
 echo "==> Copying themes..."
 copy_dir_contents "$SCRIPT_DIR/themes" "$PI_AGENT_DIR/themes"
 
-echo "==> Copying subagent definitions..."
-copy_dir_contents "$SCRIPT_DIR/agents" "$PI_AGENT_DIR/agents"
+echo "==> Updating subagent definitions..."
+mkdir -p "$PI_AGENT_DIR/agents"
+for agent_file in "$SCRIPT_DIR"/agents/*.md; do
+  target="$PI_AGENT_DIR/agents/$(basename "$agent_file")"
+  if [[ -f "$target" ]]; then
+    node "$SCRIPT_DIR/scripts/merge-agent.mjs" "$agent_file" "$target"
+  else
+    copy_file "$agent_file" "$target"
+  fi
+done
 
 echo "==> Installing subagent skills..."
 for skill_dir in "$SCRIPT_DIR"/skills/*; do

@@ -34,7 +34,8 @@
       "./skills/tdd/SKILL.md",
       "./skills/thermo-nuclear-code-quality-review/SKILL.md",
       "./skills/tinyfish/SKILL.md",
-      "./skills/to-prd/SKILL.md"
+      "./skills/to-prd/SKILL.md",
+      "./skills/to-slices/SKILL.md"
     ]
   }
 }
