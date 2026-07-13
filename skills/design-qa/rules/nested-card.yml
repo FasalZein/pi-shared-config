@@ -1,0 +1,20 @@
+id: nested-card
+language: tsx
+severity: warning
+message: "Card nested inside another Card — flatten with border-b separators"
+rule:
+  kind: jsx_element
+  all:
+    - has:
+        kind: jsx_opening_element
+        has:
+          kind: identifier
+          regex: "^Card$"
+    - has:
+        kind: jsx_element
+        stopBy: end
+        has:
+          kind: jsx_opening_element
+          has:
+            kind: identifier
+            regex: "^Card$"

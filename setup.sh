@@ -19,49 +19,69 @@ copy_dir_contents() {
   cp -R "$src"/. "$dst"/
 }
 
+copy_skill() {
+  local src="$1"
+  local name
+  local dst
+  name="$(basename "$src")"
+  dst="$PI_AGENT_DIR/skills/$name"
+
+  if [[ -f "$dst/SKILL.md" && ! -f "$dst/.pi-shared-config" ]]; then
+    echo "    keeping existing skill: $name"
+    return
+  fi
+  if [[ ! -f "$dst/SKILL.md" && -f "$HOME/.agents/skills/$name/SKILL.md" ]]; then
+    echo "    using existing global skill: $name"
+    return
+  fi
+
+  copy_dir_contents "$src" "$dst"
+}
+
 echo "==> pi-shared-config setup"
 echo "    target: $PI_AGENT_DIR"
 echo ""
 
-# --- Config files ---
-echo "==> Copying Pi config files..."
+echo "==> Updating Pi config files..."
 mkdir -p "$PI_AGENT_DIR"
 if [[ -f "$PI_AGENT_DIR/models.json" ]]; then
   echo "    keeping existing models.json (providers are user-specific)"
 else
   copy_file "$SCRIPT_DIR/models.json" "$PI_AGENT_DIR/models.json"
 fi
-copy_file "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json"
+if [[ -f "$PI_AGENT_DIR/settings.json" ]]; then
+  node "$SCRIPT_DIR/scripts/merge-settings.mjs" "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json"
+  echo "    reconciled shared packages; preserved personal settings"
+else
+  copy_file "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json"
+fi
 copy_file "$SCRIPT_DIR/AGENTS.md" "$PI_AGENT_DIR/AGENTS.md"
 copy_file "$SCRIPT_DIR/APPEND_SYSTEM.md" "$PI_AGENT_DIR/APPEND_SYSTEM.md"
 copy_file "$SCRIPT_DIR/keybindings.json" "$PI_AGENT_DIR/keybindings.json"
 copy_file "$SCRIPT_DIR/fancy-footer.json" "$PI_AGENT_DIR/fancy-footer.json"
 
-# --- Themes ---
 echo "==> Copying themes..."
 copy_dir_contents "$SCRIPT_DIR/themes" "$PI_AGENT_DIR/themes"
 
-# --- Subagents ---
 echo "==> Copying subagent definitions..."
 copy_dir_contents "$SCRIPT_DIR/agents" "$PI_AGENT_DIR/agents"
 
-# --- Local extensions ---
-# Copy explicitly so standalone install.sh can clone into a temp dir and delete it afterwards.
-# Do not add this repo as a local Pi package path; that path may not exist later.
+echo "==> Installing subagent skills..."
+for skill_dir in "$SCRIPT_DIR"/skills/*; do
+  [[ -d "$skill_dir" ]] || continue
+  copy_skill "$skill_dir"
+done
+
 echo "==> Copying local extensions..."
-mkdir -p "$PI_AGENT_DIR/extensions/cmux"
-copy_file "$SCRIPT_DIR/extensions/cmux/index.ts" "$PI_AGENT_DIR/extensions/cmux/index.ts"
+mkdir -p "$PI_AGENT_DIR/extensions"
 copy_file "$SCRIPT_DIR/extensions/pi-tps.ts" "$PI_AGENT_DIR/extensions/pi-tps.ts"
-copy_file "$SCRIPT_DIR/extensions/full-context-bar.ts" "$PI_AGENT_DIR/extensions/full-context-bar.ts"
 copy_file "$SCRIPT_DIR/extensions/morph-indicator.ts" "$PI_AGENT_DIR/extensions/morph-indicator.ts"
 copy_file "$SCRIPT_DIR/extensions/eko24ive-pi-ask.json" "$PI_AGENT_DIR/extensions/eko24ive-pi-ask.json"
 
-# Remove the old repo-managed FFF wrapper. FFF is not part of the current shared setup.
-rm -rf "$PI_AGENT_DIR/extensions/fff"
+# Remove files previously installed by this repo that current Pi/fancy-footer supersedes.
+rm -f "$PI_AGENT_DIR/extensions/full-context-bar.ts"
+rm -rf "$PI_AGENT_DIR/extensions/cmux"
 
-# --- Optional package reconciliation ---
-# settings.json is the source of truth. `pi update --extensions` respects package filters
-# while raw `pi install <pkg>` can re-add package defaults this config disables.
 if [[ "$INSTALL_PI_PACKAGES" == "true" ]] && command -v pi >/dev/null 2>&1; then
   echo "==> Reconciling Pi packages from settings.json..."
   pi update --extensions 2>/dev/null || echo "    (skip — pi packages will install/reconcile on next pi startup)"
@@ -72,4 +92,4 @@ fi
 echo ""
 echo "==> Done!"
 echo ""
-echo "    Pi shared config installed. Keep your provider/model credentials in your own models.json."
+echo "    Shared config updated. Existing provider/model credentials and personal settings were preserved."

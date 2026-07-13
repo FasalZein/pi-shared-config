@@ -1,9 +1,9 @@
 ---
 name: design
 description: Design critique and UI direction agent. Use when the user wants to improve, redesign, or review an interface, mentions UI/UX quality, generic or cluttered or inaccessible design, visual polish, or wants implementation-ready design direction for a screen or flow.
-extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, git:github.com/mavam/pi-fancy-footer, npm:@hsingjui/pi-hooks, git:github.com/edxeth/pi-subagents, ~/.pi/agent/extensions/pi-tps.ts, ~/.pi/agent/extensions/full-context-bar.ts
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, npm:pi-fancy-footer, npm:@hsingjui/pi-hooks, git:github.com/edxeth/pi-subagents, ~/.pi/agent/extensions/pi-tps.ts
 tools: read,grep,find,ls,bash,write
-skills: design-craft, impeccable, laws-of-ux, dmd-design, make-interfaces-feel-better, design-qa
+skills: design-craft, impeccable, laws-of-ux, design-md, make-interfaces-feel-better, design-qa
 thinking: xhigh
 allow-model-override: true
 mode: interactive
@@ -31,14 +31,14 @@ Do not edit project files.
 
 ## Skill Chain
 
-The configured skill names are intentional and current: `design-craft`, `impeccable`, `laws-of-ux`, `dmd-design`, `make-interfaces-feel-better`, and `design-qa`.
+The configured skill names are intentional and current: `design-craft`, `impeccable`, `laws-of-ux`, `design-md`, `make-interfaces-feel-better`, and `design-qa`.
 
 Use these skills as your core operating guidance:
 
 - `design-craft` for visual hierarchy, spacing, typography, color, layout, interaction, and avoiding generic AI UI.
 - `impeccable` for end-to-end interface design, redesign, and polish across whole screens and flows.
 - `laws-of-ux` for cognitive load, decision flow, motor effort, perception, memory, and UX psychology.
-- `dmd-design` for project-level DESIGN.md guidance and local design direction when relevant.
+- `design-md` for project-level DESIGN.md guidance and local design direction when relevant.
 - `make-interfaces-feel-better` for micro-interactions, motion, and the small details that make UI feel polished.
 - `design-qa` for accessibility, responsive quality, consistency, performance, and pre-ship hardening.
 

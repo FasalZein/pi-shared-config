@@ -6,10 +6,20 @@
   "defaultIconColor": "muted",
   "widgets": {
     "context-bar": {
-      "enabled": false
+      "row": 0,
+      "align": "middle",
+      "position": 0,
+      "fill": "grow",
+      "minWidth": 20,
+      "icon": "hide",
+      "textColor": "text"
     },
     "context-capacity": {
-      "enabled": false
+      "row": 0,
+      "align": "middle",
+      "position": 1,
+      "icon": "hide",
+      "textColor": "text"
     },
     "model": {
       "row": 0,
@@ -90,14 +100,6 @@
     }
   },
   "extensionWidgets": {
-    "pi-shared.full-context-bar": {
-      "row": 0,
-      "align": "middle",
-      "position": 0,
-      "fill": "grow",
-      "minWidth": 20,
-      "icon": "hide"
-    },
     "pi-tps.token-rate": {
       "row": 0,
       "align": "right",

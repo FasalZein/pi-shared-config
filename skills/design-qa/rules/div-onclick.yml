@@ -1,0 +1,15 @@
+id: div-with-onclick
+language: tsx
+severity: warning
+message: "onClick on <div> — use <button> for interactive elements"
+rule:
+  kind: jsx_opening_element
+  all:
+    - has:
+        kind: identifier
+        regex: "^div$"
+    - has:
+        kind: jsx_attribute
+        has:
+          kind: property_identifier
+          regex: "^onClick$"

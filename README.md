@@ -1,22 +1,24 @@
 # pi-shared-config
 
-Shared configuration for [Pi](https://pi.dev): settings, themes, keybindings, subagents, and a small set of local extensions.
+Shared configuration for [Pi](https://pi.dev): a CPA localhost model catalog, portable settings, themes, keybindings, current subagents, and a small set of local UI extensions.
 
-This repo is meant to make a fresh Pi install feel ready to use quickly without assuming anyone's provider accounts. Provider credentials and model endpoints stay in each user's own `~/.pi/agent/models.json`.
+The repo avoids personal credentials and machine-specific provider routes. Existing `~/.pi/agent/models.json` and personal settings are preserved when setup is re-run.
 
 ## What this installs
 
 | Area | What is included |
 | --- | --- |
-| Providers | none; `models.json` is user-specific |
+| Provider template | `cpa` at `http://127.0.0.1:8787/v1` with a dummy key |
+| CPA models | GPT-5.6 Sol/Terra/Luna, GPT-5.4, GPT-5.4 Mini, GPT-5.3 Codex, Grok 4.5 |
 | Pi settings | SSE transport, curated packages, shared UI/task defaults |
 | Themes | `tokyonight` and `mocha` |
 | Keybindings | Shared keybinding defaults |
 | Subagents | architect, design, researcher, reviewer, scout, worker, scout report template |
-| Extensions | cmux status, token-rate footer, full-width context bar, morphing working indicator, pi-ask config |
-| Footer | shared fancy-footer layout |
+| Subagent skills | PRD shaping, design, research, implementation, and review workflows required by the bundled agents |
+| Extensions | token-rate footer, morphing working indicator, pi-ask config |
+| Footer | `pi-fancy-footer` with native full-width context and capacity widgets |
 
-No real API keys, account tokens, proxy URLs, or local provider endpoints are stored in this repo.
+No real API keys, account tokens, proxy URLs, or private provider endpoints are stored in this repo.
 
 ## Requirements
 
@@ -26,11 +28,9 @@ Install Pi first:
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 ```
 
-You also need `git` and `curl` for the bootstrap flow.
+You also need `git`, `curl`, and Node.js for the bootstrap and settings merge.
 
-## Install the Pi configuration
-
-Clone the repo and run the setup script:
+## Install or update
 
 ```bash
 git clone https://github.com/FasalZein/pi-shared-config
@@ -38,48 +38,41 @@ cd pi-shared-config
 bash setup.sh
 ```
 
-This copies shared config files into `~/.pi/agent`:
+The setup script:
 
-- `settings.json`
-- `AGENTS.md`
-- `APPEND_SYSTEM.md`
-- `keybindings.json`
-- themes
-- subagent definitions
-- local extensions
-- `fancy-footer.json`
+- installs the CPA model template only when `models.json` is missing;
+- preserves existing providers and credentials;
+- reconciles the shared package list while preserving personal settings and packages;
+- installs all skills explicitly required by bundled subagents, while retaining an existing personal/global copy with the same name;
+- copies shared instructions, agents, themes, keybindings, footer config, and local extensions;
+- removes the old repo-installed `full-context-bar` patch and CMUX integration;
+- reconciles Pi packages when `pi` is available.
 
-`setup.sh` only writes `models.json` when one does not already exist. Existing provider credentials and model endpoints are preserved.
+Disable package reconciliation when needed:
 
-## Configure your own models
+```bash
+INSTALL_PI_PACKAGES=false bash setup.sh
+```
 
-After installing the shared config, keep your personal providers in:
+## CPA provider
+
+The bundled provider expects a compatible local service at:
 
 ```text
-~/.pi/agent/models.json
+http://127.0.0.1:8787/v1
 ```
 
-This repo ships an empty provider template:
+Its configured API key is the literal dummy value `dummy`. Setup never overwrites an existing `models.json`, so users can keep different providers or replace the CPA endpoint locally.
 
-```json
-{
-  "providers": {}
-}
-```
+The shared settings intentionally do not set `defaultProvider`, `defaultModel`, or `enabledModels`; those remain user choices.
 
-Add whatever providers your local Pi setup uses. The shared settings intentionally do not set `defaultProvider`, `defaultModel`, or `enabledModels` because those vary per user.
-
-## Re-run package reconciliation
+## Package updates
 
 ```bash
 pi update --extensions
 ```
 
-`setup.sh` runs this automatically when `pi` is available unless you set:
-
-```bash
-INSTALL_PI_PACKAGES=false bash setup.sh
-```
+The current shared package set uses `npm:pi-fancy-footer`. Its built-in `context-bar` and `context-capacity` widgets replace the old custom full-context-bar extension.
 
 ## Installed files
 
@@ -97,9 +90,7 @@ pi-shared-config/
 │   ├── scout-report-template.md
 │   └── worker.md
 ├── extensions/
-│   ├── cmux/index.ts
 │   ├── eko24ive-pi-ask.json
-│   ├── full-context-bar.ts
 │   ├── morph-indicator.ts
 │   └── pi-tps.ts
 ├── fancy-footer.json
@@ -107,6 +98,14 @@ pi-shared-config/
 ├── keybindings.json
 ├── models.json
 ├── package.json
+├── scripts/merge-settings.mjs
+├── skills/
+│   ├── grill-with-docs/, grilling/, domain-modeling/, and to-prd/
+│   ├── design-craft/, impeccable/, laws-of-ux/, design-md/, design-qa/
+│   ├── make-interfaces-feel-better/
+│   ├── research/, exa/, firecrawl/, tinyfish/
+│   ├── implement/ and tdd/
+│   └── code-review/ and thermo-nuclear-code-quality-review/
 ├── settings.json
 ├── setup.sh
 └── themes/
@@ -114,26 +113,18 @@ pi-shared-config/
 
 ## Standalone bootstrap
 
-For Pi config only:
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
 ```
 
+## Intentionally excluded
+
+The shared setup excludes provider/proxy-specific patches, generated integration files, local development paths, wiki hooks, elevated permission preferences, backups, and terminal utility integrations such as ghui, lazygit, Lumen, and Yazi.
+
 ## Troubleshooting
 
-### Pi still shows old provider names
-
-Restart Pi after changing your personal `models.json` or model-related settings.
-
-### Packages or extensions did not update
-
-Run:
+Restart Pi after changing models, packages, agents, or extensions. If packages did not update, run:
 
 ```bash
 pi update --extensions
 ```
-
-## Notes on extension choices
-
-This config intentionally excludes local provider/proxy-specific extensions and machine-specific paths. It also excludes integration-managed files such as herdr's generated agent-state extension; those should be installed by their owning tool.

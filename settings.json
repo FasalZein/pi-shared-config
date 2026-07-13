@@ -22,7 +22,6 @@
         "-ralph-loop/ralph-loop.ts"
       ]
     },
-    "git:github.com/ttttmr/pi-context",
     "git:github.com/edxeth/pi-gpt-config",
     "git:github.com/edxeth/pi-ptc-next",
     "git:github.com/edxeth/pi-tasks",
@@ -30,7 +29,7 @@
     "git:github.com/edxeth/pi-better-skills",
     "git:github.com/eko24ive/pi-ask",
     "git:github.com/edxeth/pi-subagents",
-    "git:github.com/mavam/pi-fancy-footer",
+    "npm:pi-fancy-footer",
     "npm:@howaboua/pi-auto-trees",
     {
       "source": "git:github.com/DietrichGebert/ponytail",
@@ -46,8 +45,7 @@
     "git:github.com/nicobailon/visual-explainer",
     "npm:pi-mcp-adapter",
     "git:github.com/edxeth/pi-ralph-loop",
-    "git:github.com/edxeth/pi-claude-auth",
-    "https://github.com/vvv850/pi-pretty-codeblocks"
+    "git:github.com/edxeth/pi-claude-auth"
   ],
   "hideThinkingBlock": true,
   "theme": "tokyonight",

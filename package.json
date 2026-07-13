@@ -1,7 +1,7 @@
 {
   "name": "pi-shared-config",
-  "version": "1.2.0",
-  "description": "Pi coding agent shared configuration — current subagents, curated packages, and local UI extensions without provider credentials",
+  "version": "1.3.0",
+  "description": "Pi coding agent shared configuration — current subagents, curated packages, skills, and local UI extensions without provider credentials",
   "keywords": ["pi-package"],
   "type": "module",
   "peerDependencies": {
@@ -13,10 +13,28 @@
   },
   "pi": {
     "extensions": [
-      "./extensions/cmux/index.ts",
       "./extensions/pi-tps.ts",
-      "./extensions/full-context-bar.ts",
       "./extensions/morph-indicator.ts"
+    ],
+    "skills": [
+      "./skills/code-review/SKILL.md",
+      "./skills/design-craft/SKILL.md",
+      "./skills/design-md/SKILL.md",
+      "./skills/design-qa/SKILL.md",
+      "./skills/domain-modeling/SKILL.md",
+      "./skills/exa/SKILL.md",
+      "./skills/firecrawl/SKILL.md",
+      "./skills/grill-with-docs/SKILL.md",
+      "./skills/grilling/SKILL.md",
+      "./skills/impeccable/SKILL.md",
+      "./skills/implement/SKILL.md",
+      "./skills/laws-of-ux/SKILL.md",
+      "./skills/make-interfaces-feel-better/SKILL.md",
+      "./skills/research/SKILL.md",
+      "./skills/tdd/SKILL.md",
+      "./skills/thermo-nuclear-code-quality-review/SKILL.md",
+      "./skills/tinyfish/SKILL.md",
+      "./skills/to-prd/SKILL.md"
     ]
   }
 }

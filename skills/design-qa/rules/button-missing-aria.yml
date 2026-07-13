@@ -1,0 +1,16 @@
+id: button-missing-aria-label
+language: tsx
+severity: warning
+message: "Self-closing <Button /> without aria-label — if inside render={}, it's a false positive (Base UI delegates children from parent)"
+rule:
+  all:
+    - kind: jsx_self_closing_element
+    - has:
+        kind: identifier
+        regex: "^(Button|IconButton)$"
+    - not:
+        has:
+          kind: jsx_attribute
+          has:
+            kind: property_identifier
+            regex: "^(aria-label|aria-labelledby)$"

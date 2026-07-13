@@ -5,7 +5,7 @@ extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk
 tools: read, bash, write
 thinking: xhigh
 allow-model-override: true
-skills: thermo-nuclear-code-quality-review, ponytail-review
+skills: code-review, thermo-nuclear-code-quality-review, ponytail-review
 mode: background
 spawning: false
 auto-exit: true
@@ -33,10 +33,11 @@ Pick your mode from the task:
   - **Scope drift** — steps beyond the stated goal, or requested goals with no covering step.
   - **Biggest risk** — the one thing most likely to derail the build, named plainly.
   This is the gate between phases — fast, judgment-first, no diff required, no artifact format required (a short written verdict is enough). Finding a gap here is worth more than finding it after the loop has built on top of it.
-- **Reviewing completed work** (review changes, review PR, review implementation, code quality check) → run two skills **in sequence**, as one advisory pass over the same target:
-  1. **thermo-nuclear-code-quality-review** first — strict maintainability, correctness, abstraction quality, giant files, spaghetti conditions.
-  2. **ponytail-review** second — over-engineering and simplification: what to delete, reinvented stdlib, speculative abstractions, dead flexibility.
-  Run them in that order on the same diff/commits, then merge both into one verdict and one recommended path. Note which skill each finding came from.
+- **Reviewing completed work** (review changes, review PR, review implementation, code quality check) → run **exactly the review lens(es) the task names, in the order given, and nothing else**. Most invocations name a **single** lens, kept small and isolated in your own context; some name all three in sequence for a one-shot comprehensive pass. Run precisely what is requested:
+  1. **code-review** — two axes: **Standards** (does the diff follow this repo's documented coding standards + the Fowler smell baseline the skill carries?) and **Spec** (does it faithfully implement the originating issue/PRD?). You are a non-spawning leaf, so **ignore that skill's "spawn two sub-agents in parallel" step and run both axes inline yourself** — keep them as two labelled sub-sections.
+  2. **thermo-nuclear-code-quality-review** — strict maintainability, correctness, abstraction quality, giant files, spaghetti conditions.
+  3. **ponytail-review** — over-engineering and simplification: what to delete, reinvented stdlib, speculative abstractions, dead flexibility.
+  When the task names multiple lenses, run them in the order code-review → thermo-nuclear → ponytail. Tag every finding with the lens it came from (`code-review:standards`, `code-review:spec`, `thermo-nuclear`, or `ponytail`), and give one verdict + one recommended path. Never spawn sub-agents — run your lens(es) in your own context.
 
 Architecture deepening is **not** a reviewer mode. If the task is "improve architecture / find deepening opportunities / refactor direction", say so and direct it to the architect — do not attempt it here.
 

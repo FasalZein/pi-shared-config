@@ -1,10 +1,10 @@
 ---
 name: scout
 description: Fast codebase reconnaissance - gathers context without making changes
-extensions: npm:@tomooshi/condensed-milk-pi, npm:@hsingjui/pi-hooks
+extensions: npm:@hsingjui/pi-hooks
 tools: read,grep,find,ls,bash,write
 skills: none
-thinking: off
+thinking: low
 allow-model-override: true
 mode: background
 auto-exit: true
