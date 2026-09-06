@@ -1,0 +1,11 @@
+{
+  "proxyProviders": [
+    "hex",
+    "oep-gpt",
+    "oep-claude",
+    "9router",
+    "cn",
+    "newapi"
+  ],
+  "objectToolChoice": []
+}

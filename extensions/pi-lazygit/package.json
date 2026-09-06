@@ -1,0 +1,9 @@
+{
+  "name": "pi-lazygit",
+  "private": true,
+  "type": "module",
+  "description": "Lazygit integration for Pi — open lazygit with Alt+G",
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

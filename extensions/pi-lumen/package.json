@@ -1,0 +1,21 @@
+{
+  "name": "pi-lumen",
+  "private": true,
+  "type": "module",
+  "description": "Lumen diff viewer integration for Pi — open diffs with Alt+D and pick commits with Alt+Shift+D",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "^0.74.0",
+    "@earendil-works/pi-tui": "^0.74.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.7.3"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

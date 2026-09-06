@@ -1,0 +1,9 @@
+{
+  "name": "pi-yazi",
+  "private": true,
+  "type": "module",
+  "description": "Yazi integration for Pi — open Yazi file manager with Alt+Y",
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

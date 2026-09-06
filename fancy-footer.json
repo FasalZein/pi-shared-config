@@ -42,6 +42,33 @@
       "iconColor": "muted",
       "textColor": "text"
     },
+    "provider-status": {
+      "enabled": false
+    },
+    "cache-read": {
+      "enabled": true,
+      "row": 1,
+      "align": "right",
+      "position": 3,
+      "iconColor": "muted",
+      "textColor": "muted"
+    },
+    "cache-write": {
+      "enabled": true,
+      "row": 1,
+      "align": "right",
+      "position": 4,
+      "iconColor": "muted",
+      "textColor": "muted"
+    },
+    "cache-hit-rate": {
+      "enabled": true,
+      "row": 1,
+      "align": "right",
+      "position": 5,
+      "iconColor": "muted",
+      "textColor": "muted"
+    },
     "location": {
       "row": 1,
       "align": "left",
@@ -79,24 +106,6 @@
       "align": "left",
       "position": 5,
       "textColor": "warning"
-    },
-    "pull-request": {
-      "row": 1,
-      "align": "right",
-      "position": 0,
-      "textColor": "text"
-    },
-    "pull-request-review-threads": {
-      "row": 1,
-      "align": "right",
-      "position": 1,
-      "textColor": "warning"
-    },
-    "pull-request-ci-status": {
-      "row": 1,
-      "align": "right",
-      "position": 2,
-      "textColor": "error"
     }
   },
   "extensionWidgets": {
@@ -105,6 +114,24 @@
       "align": "right",
       "position": 1,
       "textColor": "success"
+    },
+    "pi-prs.number": {
+      "row": 1,
+      "align": "right",
+      "position": 0,
+      "textColor": "text"
+    },
+    "pi-prs.review-threads": {
+      "row": 1,
+      "align": "right",
+      "position": 1,
+      "textColor": "warning"
+    },
+    "pi-prs.ci": {
+      "row": 1,
+      "align": "right",
+      "position": 2,
+      "textColor": "error"
     }
   }
 }

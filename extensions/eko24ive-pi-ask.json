@@ -1,12 +1,25 @@
 {
   "schemaVersion": 5,
   "answer": {
-    "extractionModels": [],
+    "extractionModels": [
+      {
+        "provider": "openai-codex",
+        "id": "gpt-5.4-mini"
+      },
+      {
+        "provider": "github-copilot",
+        "id": "gpt-5.4-mini"
+      },
+      {
+        "provider": "anthropic",
+        "id": "claude-haiku-4-5"
+      }
+    ],
     "extractionRetries": 1,
     "extractionTimeoutMs": 30000
   },
   "behaviour": {
-    "autoSubmitWhenAnsweredWithoutNotes": false,
+    "autoSubmitWhenAnsweredWithoutNotes": true,
     "confirmDismissWhenDirty": true,
     "doublePressReviewShortcuts": true,
     "presentSingleAsMulti": false,

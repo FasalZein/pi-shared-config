@@ -1,7 +1,0 @@
-id: h-screen-usage
-language: tsx
-severity: error
-message: "h-screen causes viewport issues on iOS Safari — use h-dvh instead"
-rule:
-  kind: string
-  regex: "\\bh-screen\\b"

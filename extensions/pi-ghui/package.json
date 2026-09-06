@@ -1,0 +1,20 @@
+{
+  "name": "pi-ghui",
+  "private": true,
+  "type": "module",
+  "description": "ghui (GitHub TUI) integration for Pi — open ghui with Alt+G or /ghui command",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "^0.74.0",
+    "@earendil-works/pi-tui": "^0.74.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.7.3"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

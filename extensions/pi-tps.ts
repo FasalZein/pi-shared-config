@@ -1,98 +1,110 @@
 /**
- * Token Rate (TPS) Extension
+ * Shows average output tokens per second in pi-fancy-footer.
  *
- * Shows the average output tokens per second as a pi-fancy-footer widget.
- * Registers via the fancy-footer widget discovery event so no direct import
- * of the package is required.
+ * The calculation matches the previously working extension: output tokens
+ * divided by model-response time, excluding tool execution after a tool call.
  */
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-const DISCOVER_EVENT = "pi-fancy-footer:discover-widgets";
-const REQUEST_DISCOVERY_EVENT = "pi-fancy-footer:request-widget-discovery";
-const REQUEST_REFRESH_EVENT = "pi-fancy-footer:request-widget-refresh";
+const PROTOCOL = 1;
+const WIDGET_CHANNEL = "pi-fancy-footer:widget";
+const READY_CHANNEL = "pi-fancy-footer:ready";
+const WIDGET_ID = "pi-tps.token-rate";
+
+export function averageTokenRate(outputTokens: number, elapsedMs: number): number | undefined {
+  if (outputTokens <= 0 || elapsedMs <= 0) return undefined;
+  const rate = outputTokens / (elapsedMs / 1_000);
+  return Number.isFinite(rate) ? rate : undefined;
+}
+
+type ReadyMessage = { protocol?: number };
 
 export default function (pi: ExtensionAPI) {
   let totalOutputTokens = 0;
-  let totalSeconds = 0;
-  let turnStartMs: number | null = null;
-  let turnStreamEndMs: number | null = null;
-  let currentTps = 0;
+  let totalMs = 0;
+  let turnStartMs: number | undefined;
+  let turnStreamEndMs: number | undefined;
+  let currentRate: number | undefined;
 
   const reset = () => {
     totalOutputTokens = 0;
-    totalSeconds = 0;
-    turnStartMs = null;
-    turnStreamEndMs = null;
-    currentTps = 0;
+    totalMs = 0;
+    turnStartMs = undefined;
+    turnStreamEndMs = undefined;
+    currentRate = undefined;
   };
 
-  // Register the TPS widget with pi-fancy-footer.
-  const widget = {
-    id: "pi-tps.token-rate",
-    label: "Token rate (TPS)",
-    description: "Average output tokens per second for the session.",
-    row: 0,
-    order: 3,
-    align: "right" as const,
-    icon: false as const,
-    textColor: "success" as const,
-    render: (): string | undefined => {
-      if (currentTps <= 0 || !Number.isFinite(currentTps)) return undefined;
-      return `${currentTps.toFixed(1)} tok/s`;
-    },
+  const publish = () => {
+    pi.events.emit(WIDGET_CHANNEL, {
+      protocol: PROTOCOL,
+      type: "upsert",
+      widget: {
+        id: WIDGET_ID,
+        label: "Token rate (TPS)",
+        description: "Average output tokens per second for this session.",
+        content: {
+          type: "text",
+          text: currentRate === undefined ? "-- tok/s" : `${currentRate.toFixed(1)} tok/s`,
+        },
+        icon: false,
+        style: { textColor: "success" },
+        layout: { row: 0, position: 3, align: "right" },
+      },
+    });
   };
 
-  pi.events.on(DISCOVER_EVENT, (payload: any) => {
-    if (payload && typeof payload.registerWidget === "function") {
-      payload.registerWidget(widget);
-    }
+  const stopReady = pi.events.on(READY_CHANNEL, (message: ReadyMessage) => {
+    if (message?.protocol === PROTOCOL) publish();
   });
-  // Ask fancy-footer to re-discover in case it already ran discovery before
-  // this extension's listener was attached.
-  pi.events.emit(REQUEST_DISCOVERY_EVENT, {});
 
-  const refreshFooter = () => {
-    pi.events.emit(REQUEST_REFRESH_EVENT, {});
-  };
+  publish();
 
-  pi.on("session_start", async () => {
+  pi.on("session_start", () => {
     reset();
-    pi.events.emit(REQUEST_DISCOVERY_EVENT, {});
+    publish();
   });
 
-  pi.on("turn_start", async (event) => {
+  pi.on("turn_start", (event) => {
     turnStartMs = event.timestamp ?? Date.now();
-    turnStreamEndMs = null;
+    turnStreamEndMs = undefined;
   });
 
-  pi.on("tool_call", async () => {
-    if (turnStartMs !== null && turnStreamEndMs === null) {
+  pi.on("tool_call", () => {
+    if (turnStartMs !== undefined && turnStreamEndMs === undefined) {
       turnStreamEndMs = Date.now();
     }
   });
 
-  pi.on("turn_end", async (event) => {
+  pi.on("turn_end", (event) => {
     const message = event.message as AssistantMessage | undefined;
     if (!message || message.role !== "assistant") {
-      turnStartMs = null;
-      turnStreamEndMs = null;
+      turnStartMs = undefined;
+      turnStreamEndMs = undefined;
       return;
     }
 
     const endMs = turnStreamEndMs ?? Date.now();
-    const startMs = turnStartMs ?? endMs;
-    const elapsedSeconds = Math.max(0.001, (endMs - startMs) / 1000);
-
+    const elapsedMs = Math.max(1, endMs - (turnStartMs ?? endMs));
     const outputTokens = message.usage?.output ?? 0;
+
     if (outputTokens > 0) {
       totalOutputTokens += outputTokens;
-      totalSeconds += elapsedSeconds;
-      if (totalSeconds > 0) currentTps = totalOutputTokens / totalSeconds;
+      totalMs += elapsedMs;
+      currentRate = averageTokenRate(totalOutputTokens, totalMs);
+      publish();
     }
 
-    turnStartMs = null;
-    turnStreamEndMs = null;
-    refreshFooter();
+    turnStartMs = undefined;
+    turnStreamEndMs = undefined;
+  });
+
+  pi.on("session_shutdown", () => {
+    stopReady();
+    pi.events.emit(WIDGET_CHANNEL, {
+      protocol: PROTOCOL,
+      type: "remove",
+      id: WIDGET_ID,
+    });
   });
 }

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Design MD"
-  short_description: "Generate app design context with DMD"
-  default_prompt: "Use $design-md to create a DESIGN.md for this app."

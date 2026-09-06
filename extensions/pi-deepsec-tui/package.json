@@ -1,0 +1,9 @@
+{
+  "name": "pi-deepsec-tui",
+  "private": true,
+  "type": "module",
+  "description": "Launch deepsec-tui from Pi — pick Pi models and run deepsec",
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

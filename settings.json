@@ -1,5 +1,45 @@
 {
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-5",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "anthropic/claude-fable-5",
+    "anthropic/claude-opus-4-6",
+    "anthropic/claude-opus-4-8",
+    "cpa/gpt-5.6-luna",
+    "cpa/gpt-5.6-sol",
+    "cpa/gpt-5.6-terra",
+    "grok-cli/grok-4.6",
+    "grok-cli/grok-composer-2.5-fast",
+    "kiro/claude-opus-4-6-thinking",
+    "kiro/claude-opus-4-7-thinking",
+    "kiro/claude-opus-4-8-thinking",
+    "kiro/claude-sonnet-4-6-thinking",
+    "nahcrof/deepseek-v4-pro",
+    "nahcrof/glm-5.2",
+    "nahcrof/kimi-k2.6",
+    "openai-codex/gpt-5.3-codex-spark",
+    "openai-codex/gpt-5.5",
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra",
+    "zai/glm-5.2",
+    "zai/glm-5.3",
+    "zai/glm-5.3-flash",
+    "opencode-go/deepseek-v4-pro",
+    "nahcrof/deepseek-v4-flash-0731",
+    "opencode-go/deepseek-v4-flash",
+    "anthropic/claude-opus-5",
+    "cloudflare-workers-ai/@cf/zai-org/glm-5.2",
+    "cloudflare-workers-ai/@cf/deepseek-ai/deepseek-v4-flash-0731",
+    "cloudflare-workers-ai/@cf/deepseek-ai/deepseek-v4-pro-0813",
+    "9router/cbcn/kimi-k3",
+    "anthropic/claude-fable-5-1",
+    "openai-codex/gpt-6-astra",
+    "cursor/cursor-grok-4.6-high-fast",
+    "cursor/cursor-grok-4.6-medium-fast",
+    "cursor/cursor-grok-4.6-xhigh-fast"
+  ],
   "transport": "sse",
   "npmCommand": [
     "env",
@@ -23,39 +63,39 @@
       ]
     },
     "git:github.com/edxeth/pi-gpt-config",
-    "git:github.com/edxeth/pi-ptc-next",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
     "git:github.com/edxeth/pi-better-skills",
-    "git:github.com/eko24ive/pi-ask",
+    "../../Dev/AI/pi/extensions/pi-ask",
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-fancy-footer",
     "npm:@howaboua/pi-auto-trees",
-    {
-      "source": "git:github.com/DietrichGebert/ponytail",
-      "skills": [
-        "-skills/ponytail/SKILL.md",
-        "-skills/ponytail-audit/SKILL.md",
-        "-skills/ponytail-debt/SKILL.md",
-        "-skills/ponytail-gain/SKILL.md",
-        "-skills/ponytail-help/SKILL.md"
-      ]
-    },
+    "git:github.com/DietrichGebert/ponytail",
     "npm:@hsingjui/pi-hooks",
-    "git:github.com/nicobailon/visual-explainer",
-    "npm:pi-mcp-adapter",
     "git:github.com/edxeth/pi-ralph-loop",
-    "git:github.com/edxeth/pi-claude-auth"
+    "git:github.com/edxeth/pi-claude-auth",
+    "../../Dev/AI/pi/extensions/pi-markdown-blocks",
+    "../../Dev/AI/pi/extensions/pi-bash-backgrounder",
+    "npm:@howaboua/pi-codex-conversion",
+    "git:github.com/code-yeongyu/pi-ast-grep",
+    "../../Dev/AI/pi/extensions/pi-linear",
+    "../../Dev/AI/pi/extensions/pi-fold",
+    "npm:pi-grok-cli"
   ],
-  "hideThinkingBlock": true,
+  "lastChangelogVersion": "0.84.4",
+  "extensions": [
+    "/Users/tothemoon/Dev/AI/pi/extensions/pi-ru",
+    "/Users/tothemoon/Dev/AI/pi/extensions/pi-hub"
+  ],
+  "hideThinkingBlock": false,
   "theme": "tokyonight",
   "gptConfig": {
     "fastMode": false,
-    "personality": "friendly",
+    "personality": "none",
     "verbosity": "low",
     "summary": "auto",
     "showFooter": false,
-    "toolDiscipline": "on"
+    "toolDiscipline": "off"
   },
   "powerline": {
     "preset": "default",
@@ -70,5 +110,54 @@
     ]
   },
   "quietStartup": true,
-  "tasksMode": "open"
+  "tuiMode": "fullscreen",
+  "tasksMode": "hidden",
+  "permissionLevel": "high",
+  "permissionMode": "ask",
+  "permissionConfig": {
+    "overrides": {
+      "dangerous": [
+        "rm *",
+        "/bin/rm *",
+        "/usr/bin/rm *",
+        "*&& rm *",
+        "*; rm *",
+        "*|| rm *",
+        "*| rm *",
+        "rmdir *",
+        "unlink *",
+        "shred *",
+        "truncate *",
+        "*find * -delete*",
+        "*git clean *",
+        "*git reset --hard*",
+        "*git restore *",
+        "*git checkout -- *",
+        "*git push *--force*",
+        "*git push -f*",
+        "*rsync *--delete*",
+        "*docker system prune*",
+        "*docker volume prune*",
+        "*docker rm *",
+        "*kubectl delete *",
+        "*terraform destroy*",
+        "*pulumi destroy*",
+        "*chmod -R *",
+        "*chown -R *",
+        "wipefs *"
+      ]
+    }
+  },
+  "hooks": {},
+  "warnings": {
+    "anthropicExtraUsage": false
+  },
+  "showCacheMissNotices": true,
+  "steeringMode": "one-at-a-time",
+  "terminal": {
+    "showTerminalProgress": false
+  },
+  "images": {
+    "blockImages": false
+  }
 }

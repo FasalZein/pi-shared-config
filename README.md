@@ -1,116 +1,173 @@
 # pi-shared-config
 
-Shared configuration for [Pi](https://pi.dev): a CPA localhost model catalog, portable settings, themes, keybindings, current subagents, and a small set of local UI extensions.
+This public repository is a restorable, secret-free backup of one Pi environment. It mirrors the live configuration without copying login tokens, API keys, caches, sessions, or other machine state.
 
-The repo avoids personal credentials and machine-specific provider routes. Existing `~/.pi/agent/models.json` and personal settings are preserved when setup is re-run.
+## Backup contents
 
-## What this installs
+The repository includes:
 
-| Area | What is included |
-| --- | --- |
-| Provider template | `cpa` at `http://127.0.0.1:8787/v1` with a dummy key |
-| CPA models | GPT-5.6 Sol/Terra/Luna, GPT-5.4, GPT-5.4 Mini, GPT-5.3 Codex, Grok 4.5 |
-| Pi settings | SSE transport, curated packages, shared UI/task defaults |
-| Themes | `tokyonight` and `mocha` |
-| Keybindings | Shared keybinding defaults |
-| Subagents | architect, design, researcher, reviewer, scout, worker, scout report template |
-| Subagent skills | PRD shaping and slicing, design, research, implementation, and review workflows required by the bundled agents |
-| Extensions | token-rate footer, morphing working indicator, pi-ask config |
-| Footer | `pi-fancy-footer` with native full-width context and capacity widgets |
+- Pi settings, model definitions, keybindings, themes, prompts, trust settings, package metadata, and custom lint rules;
+- all live agent definitions, documentation, templates, extensions, and agent helper scripts;
+- the local `bro`, `msw`, and `cmux` skills;
+- `skills/.skill-lock.json`, which identifies the source of 125 managed skills;
+- `skills/symlinks.json`, which records all 130 Pi skill links into `~/.agents/skills`;
+- `extension-manifest.json`, which records installed npm extensions, Pi packages, and local extension repositories;
+- `scripts/sync-from-live.sh`, which regenerates this backup from the live machine;
+- `scripts/scan-secrets.py`, which checks the repository and staged changes for likely credentials.
 
-No real API keys, account tokens, proxy URLs, or private provider endpoints are stored in this repo.
+The live Pi helper script is stored in `agent-scripts/`. The repository's own restore and sync tools remain in `scripts/`.
+
+## Deliberately absent
+
+This repository never contains `auth.json`. Create that file through Pi's normal login flows on the restored machine.
+
+The backup also excludes generated model stores, MCP caches, Cursor SDK caches, account markers, changelogs, run history, sessions, temporary files, package installations, virtual environments, backups, and web-run state. See `.gitignore` and `scripts/sync-from-live.sh` for the complete list.
+
+`extensions/linear/credentials.json` is also excluded because it contains a Linear API key. Configure the Linear extension with credentials from the new owner after restore.
+
+## Credentials and environment variables
+
+Set these variables before starting Pi:
+
+```bash
+export NAHCROF_API_KEY='your Nahcrof API key'
+export OPENAI_API_KEY='your OpenRouter API key for the gpt-4o verifier'
+```
+
+The committed `models.json` contains `${NAHCROF_API_KEY}` at `providers.nahcrof.apiKey`. Pi resolves this environment variable at runtime. The committed OpenRouter verifier profile omits its embedded key, so the child process inherits `OPENAI_API_KEY` from the environment.
+
+Other providers use Pi's login system or their own local login flow. Placeholder values such as `dummy` and `cursor-responses-local` are intentional configuration values, not credentials.
 
 ## Requirements
 
-Install Pi first:
+Install these tools first:
+
+- Git;
+- Node.js and `npx`;
+- Bun for the Cursor bridge;
+- Python 3;
+- `rsync`;
+- Pi:
 
 ```bash
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 ```
 
-You also need `git`, `curl`, and Node.js for the bootstrap and settings merge.
+## Restore order on an empty Mac
 
-## Install or update
+### 1. Clone this repository
 
 ```bash
 git clone https://github.com/FasalZein/pi-shared-config
 cd pi-shared-config
+```
+
+Place the repository under `~/Dev` if you want the same directory layout as the source machine.
+
+### 2. Restore local extension repositories
+
+Read `extension-manifest.json`. For each entry with a `remote`, clone that URL under `~/Dev/AI/pi/extensions/<name>`, then check out the recorded commit.
+
+Some entries have no remote. `pi-autoresearch` and `pi-hooks` are Git repositories with commits but no configured remote. `pi-researcher` is a Git repository with no commit and no remote. `pi-fold` is not a Git repository. The manifest records these states honestly, but it cannot recover their source from a remote. Supply those directories from their owner if they are needed.
+
+The `piPackages` list also contains local paths. Ensure each required local package exists before Pi reconciles extensions. You can run setup with `INSTALL_PI_PACKAGES=false` until those paths are ready.
+
+### 3. Bring up the Cursor bridge
+
+`pi-cursor` is a private repository:
+
+```text
+https://github.com/isthatyousaf/pi-cursor.git
+```
+
+Only the `FasalZein` GitHub account can read it. It is not a Pi extension. It is a local server used by the `cursor` provider in `models.json`.
+
+```bash
+cd ~/Dev/AI/pi/extensions
+git clone https://github.com/isthatyousaf/pi-cursor.git
+cd pi-cursor
+git checkout e25b101f21e1b44f62025c1f652c599fd53dcca2
+bun install
+bun run login
+bun run start
+```
+
+`bun run login` authenticates against a Cursor account. The server listens at `http://127.0.0.1:4001/v1`, which matches `models.json`.
+
+The bridge learns Cursor model context limits at runtime and stores them in `.data/context-windows.json`. The three fast Grok models have a context limit of 256000:
+
+- `cursor-grok-4.6-high-fast`;
+- `cursor-grok-4.6-medium-fast`;
+- `cursor-grok-4.6-xhigh-fast`.
+
+### 4. Set credentials
+
+Export `NAHCROF_API_KEY` and `OPENAI_API_KEY` as shown above. Start Pi after setup and complete the normal login flow for Anthropic, OpenAI Codex, zai, and any other account-backed provider you use.
+
+### 5. Run the restore
+
+```bash
 bash setup.sh
 ```
 
-The setup script:
+On an empty machine, setup copies the backed-up configuration. It installs the regenerable lint dependencies, restores managed skills into `~/.agents/skills`, copies the three local skills, and recreates the Pi symlinks.
 
-- installs the CPA model template only when `models.json` is missing;
-- preserves existing providers and credentials;
-- reconciles the shared package list while preserving personal settings and packages;
-- updates shared subagent behavior while preserving each existing agent's `model` and `allowed-models` routing;
-- installs all skills explicitly required by bundled subagents, while retaining an existing personal/global copy with the same name;
-- copies shared instructions, agents, themes, keybindings, footer config, and local extensions;
-- removes the old repo-installed `full-context-bar` patch and CMUX integration;
-- reconciles Pi packages when `pi` is available.
+Setup keeps an existing `models.json`, because that file can contain working local credentials. It merges package entries into an existing `settings.json` and keeps other personal settings.
 
-Disable package reconciliation when needed:
+Use these controls when needed:
 
 ```bash
+RESTORE_MANAGED_SKILLS=false bash setup.sh
+INSTALL_CONFIG_DEPENDENCIES=false bash setup.sh
 INSTALL_PI_PACKAGES=false bash setup.sh
+PI_AGENT_DIR=/another/path bash setup.sh
 ```
 
-## CPA provider
+If the new Mac has a different home directory, setup rewrites source-home paths in copied files to the current `$HOME`.
 
-The bundled provider expects a compatible local service at:
+### 6. Verify the restored models
 
-```text
-http://127.0.0.1:8787/v1
-```
-
-Its configured API key is the literal dummy value `dummy`. Setup never overwrites an existing `models.json`, so users can keep different providers or replace the CPA endpoint locally.
-
-The shared settings intentionally do not set `defaultProvider`, `defaultModel`, or `enabledModels`; those remain user choices.
-
-## Package updates
+With the Cursor bridge running and required credentials available:
 
 ```bash
-pi update --extensions
+pi --list-models gpt-6-astra
+pi --list-models cursor-grok
 ```
 
-The current shared package set uses `npm:pi-fancy-footer`. Its built-in `context-bar` and `context-capacity` widgets replace the old custom full-context-bar extension.
+The first command must show a 372K context limit. The second command must show 256K for all three fast models.
 
-## Installed files
+## Update the backup from a live machine
 
-```text
-pi-shared-config/
-├── AGENTS.md
-├── APPEND_SYSTEM.md
-├── README.md
-├── agents/
-│   ├── architect.md
-│   ├── design.md
-│   ├── researcher.md
-│   ├── reviewer.md
-│   ├── scout.md
-│   ├── scout-report-template.md
-│   └── worker.md
-├── extensions/
-│   ├── eko24ive-pi-ask.json
-│   ├── morph-indicator.ts
-│   └── pi-tps.ts
-├── fancy-footer.json
-├── install.sh
-├── keybindings.json
-├── models.json
-├── package.json
-├── scripts/merge-settings.mjs
-├── skills/
-│   ├── grill-with-docs/, grilling/, domain-modeling/, to-prd/, and to-slices/
-│   ├── design-craft/, impeccable/, laws-of-ux/, design-md/, design-qa/
-│   ├── make-interfaces-feel-better/
-│   ├── research/, exa/, firecrawl/, tinyfish/
-│   ├── implement/ and tdd/
-│   └── code-review/ and thermo-nuclear-code-quality-review/
-├── settings.json
-├── setup.sh
-└── themes/
+Run one command from this repository:
+
+```bash
+./scripts/sync-from-live.sh
 ```
+
+The source defaults to `~/.pi/agent`. Override it with either a positional path or `PI_AGENT_SOURCE_DIR`:
+
+```bash
+./scripts/sync-from-live.sh /path/to/.pi/agent
+PI_AGENT_SOURCE_DIR=/path/to/.pi/agent ./scripts/sync-from-live.sh
+```
+
+For a nonstandard source machine layout, also set:
+
+```bash
+SKILL_STORE_DIR=/path/to/.agents \
+LOCAL_EXTENSIONS_DIR=/path/to/Dev/AI/pi/extensions \
+./scripts/sync-from-live.sh /path/to/.pi/agent
+```
+
+The sync is idempotent. It leaves the live `models.json` unchanged, scrubs copied credentials, regenerates both manifests, and fails if the credential scan finds a likely secret.
+
+Before a local commit, run:
+
+```bash
+python3 scripts/scan-secrets.py .
+```
+
+Do not push until the staged changes also pass this scan.
 
 ## Standalone bootstrap
 
@@ -118,14 +175,4 @@ pi-shared-config/
 curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
 ```
 
-## Intentionally excluded
-
-The shared setup excludes provider/proxy-specific patches, generated integration files, local development paths, wiki hooks, elevated permission preferences, backups, and terminal utility integrations such as ghui, lazygit, Lumen, and Yazi.
-
-## Troubleshooting
-
-Restart Pi after changing models, packages, agents, or extensions. If packages did not update, run:
-
-```bash
-pi update --extensions
-```
+The bootstrap clones this repository into a temporary directory and runs `setup.sh`.

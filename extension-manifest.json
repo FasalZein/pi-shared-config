@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "sourceHome": "/Users/tothemoon",
+  "npmExtensions": {
+    "@cortexkit/pi-anthropic-auth": "1.12.0",
+    "@howaboua/pi-auto-trees": "0.1.13",
+    "@howaboua/pi-codex-conversion": "3.0.29",
+    "@hsingjui/pi-hooks": "0.0.2",
+    "@tomooshi/condensed-milk-pi": "1.9.0",
+    "pi-fancy-footer": "3.0.1",
+    "pi-grok-cli": "0.8.2"
+  },
+  "piPackages": [
+    {
+      "source": "git:github.com/prateekmedia/pi-hooks",
+      "extensions": [
+        "-ralph-loop/ralph-loop.ts"
+      ]
+    },
+    "git:github.com/edxeth/pi-gpt-config",
+    "git:github.com/edxeth/pi-tasks",
+    "npm:@tomooshi/condensed-milk-pi",
+    "git:github.com/edxeth/pi-better-skills",
+    "../../Dev/AI/pi/extensions/pi-ask",
+    "git:github.com/edxeth/pi-subagents",
+    "npm:pi-fancy-footer",
+    "npm:@howaboua/pi-auto-trees",
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:@hsingjui/pi-hooks",
+    "git:github.com/edxeth/pi-ralph-loop",
+    "git:github.com/edxeth/pi-claude-auth",
+    "../../Dev/AI/pi/extensions/pi-markdown-blocks",
+    "../../Dev/AI/pi/extensions/pi-bash-backgrounder",
+    "npm:@howaboua/pi-codex-conversion",
+    "git:github.com/code-yeongyu/pi-ast-grep",
+    "../../Dev/AI/pi/extensions/pi-linear",
+    "../../Dev/AI/pi/extensions/pi-fold",
+    "npm:pi-grok-cli"
+  ],
+  "localExtensions": [
+    {
+      "name": "pi-ask",
+      "status": "git",
+      "remote": "https://github.com/eko24ive/pi-ask",
+      "commit": "368ae21ff69f1bf24df49152deb1be60f60a77af"
+    },
+    {
+      "name": "pi-autoresearch",
+      "status": "git",
+      "remote": null,
+      "commit": "9424cdc576efb718e97de609688c7c179707820b"
+    },
+    {
+      "name": "pi-better-skills",
+      "status": "git",
+      "remote": "https://github.com/edxeth/pi-better-skills.git",
+      "commit": "626556291204e0b74554439c9bb09bae0a82692e"
+    },
+    {
+      "name": "pi-cursor",
+      "status": "git",
+      "remote": "https://github.com/isthatyousaf/pi-cursor.git",
+      "commit": "e25b101f21e1b44f62025c1f652c599fd53dcca2"
+    },
+    {
+      "name": "pi-fold",
+      "status": "not-a-git-repository",
+      "remote": null,
+      "commit": null
+    },
+    {
+      "name": "pi-hooks",
+      "status": "git",
+      "remote": null,
+      "commit": "3ea597b2dde4b45af3bb5ab0d3fbd0d9529c6c9c"
+    },
+    {
+      "name": "pi-hub",
+      "status": "git",
+      "remote": "https://github.com/FasalZein/pi-hub.git",
+      "commit": "d1718231e0e77d7c8b069ffe8939c7dbb589918b"
+    },
+    {
+      "name": "pi-linear",
+      "status": "git",
+      "remote": "https://github.com/FasalZein/pi-linear.git",
+      "commit": "30c8113661e7a214fad2f77ca3600f97057de815"
+    },
+    {
+      "name": "pi-markdown-blocks",
+      "status": "git",
+      "remote": "https://github.com/FasalZein/pi-markdown-blocks.git",
+      "commit": "2403950d2916c67559f108f3cc11770123d4bb59"
+    },
+    {
+      "name": "pi-ralph-loop",
+      "status": "git",
+      "remote": "https://github.com/edxeth/pi-ralph-loop.git",
+      "commit": "84aeafc8e80e4bf155dd87e449370ab668b380df"
+    },
+    {
+      "name": "pi-researcher",
+      "status": "git-no-commits",
+      "remote": null,
+      "commit": null
+    },
+    {
+      "name": "pi-ru",
+      "status": "git",
+      "remote": "https://github.com/FasalZein/pi-ru.git",
+      "commit": "da41f886dda7f2a0d38779a7fe03a0245a91f796"
+    },
+    {
+      "name": "pi-subagents",
+      "status": "git",
+      "remote": "https://github.com/edxeth/pi-subagents.git",
+      "commit": "f445a178d14eb6d55d8f60d6aeca132713c8c188"
+    },
+    {
+      "name": "pi-tasks",
+      "status": "git",
+      "remote": "https://github.com/edxeth/pi-tasks",
+      "commit": "6a5157f746dcd8c827a64d882aef11685354c94d"
+    }
+  ],
+  "cursorBridge": {
+    "name": "pi-cursor",
+    "isPiExtension": false,
+    "privateRepository": "https://github.com/isthatyousaf/pi-cursor.git",
+    "repositoryAccess": "Only the FasalZein GitHub account can read this repository.",
+    "startCommand": "bun run start",
+    "loginCommand": "bun run login",
+    "endpoint": "http://127.0.0.1:4001/v1",
+    "modelProvider": "cursor",
+    "runtimeContextCache": ".data/context-windows.json",
+    "fastModelContextWindows": {
+      "cursor-grok-4.6-high-fast": 256000,
+      "cursor-grok-4.6-medium-fast": 256000,
+      "cursor-grok-4.6-xhigh-fast": 256000
+    }
+  }
+}

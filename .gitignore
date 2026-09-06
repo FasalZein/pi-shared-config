@@ -1,5 +1,37 @@
-# Dependencies installed by `pi install`
+# Credentials: never commit these files
+auth.json
+**/auth.json
+**/credentials.json
+
+# Regenerable Pi caches and machine state
+models-store.json
+mcp-cache.json
+mcp-onboarding.json
+cursor-sdk-context-windows.json
+cursor-sdk-model-list.json
+claude-account-source.txt
+claude-code-version.json
+howaboua-pi-stuff-changelog.json
+run-history.jsonl
+sessions/
+git/
+tests/
+tmp/
+backup/
+cache/
+state/
+llm-verifier-venv/
+web-run-sessions/
+agents.bak-*/
+*.bak-*
+
+# Dependencies installed by package managers
 node_modules/
+npm/node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
 
 # macOS
 .DS_Store
