@@ -176,3 +176,7 @@ curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/ins
 ```
 
 The bootstrap clones this repository into a temporary directory and runs `setup.sh`.
+
+## Archive
+
+`archive/retired-agents/` holds agent definitions that are no longer active: `sidekick`, `verify` and `linear-auditor`. They existed only in local backup folders that have since been removed. `setup.sh` does not install them.
