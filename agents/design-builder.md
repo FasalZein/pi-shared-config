@@ -8,7 +8,7 @@ inject-skills: design-craft
 model: anthropic/claude-opus-5
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-fable-5-1:medium, cpa/gpt-5.6-sol:high, cpa/gpt-5.6-terra:high, grok-cli/grok-4.6:high, 9router/cbcn/kimi-k3:xhigh, openai-codex/gpt-6-astra:low
+allowed-models: anthropic/claude-fable-5-1:medium, cpa/gpt-5.6-sol:high, cpa/gpt-5.6-terra:high, grok-cli/grok-4.6:high, 9router/cbcn/kimi-k3:xhigh, openai-codex/gpt-6-astra:low, opencode-go/deepseek-v4.1-flash:max
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%

@@ -7,7 +7,7 @@ skills: how, principle-guard-the-context-window
 inject-skills: principle-guard-the-context-window
 model: cursor/cursor-grok-4.6-high-fast
 allow-model-override: true
-allowed-models: cursor/cursor-grok-4.6-medium-fast, cursor/cursor-grok-4.6-xhigh-fast, grok-cli/grok-4.6:high, cpa/gpt-5.6-sol:low, anthropic/claude-opus-5:low, opencode-go/deepseek-v4-flash:max, opencode-go/deepseek-v4-pro:max, zai/glm-5.3:high, cpa/gpt-5.6-luna:xhigh
+allowed-models: cursor/cursor-grok-4.6-medium-fast, cursor/cursor-grok-4.6-xhigh-fast, grok-cli/grok-4.6:high, cpa/gpt-5.6-sol:low, anthropic/claude-opus-5:low, opencode-go/deepseek-v4.1-flash:max, opencode-go/deepseek-v4-flash:max, opencode-go/deepseek-v4-pro:max, zai/glm-5.3:high, cpa/gpt-5.6-luna:xhigh
 mode: background
 context-warn-threshold: 80%
 report-context-usage: true

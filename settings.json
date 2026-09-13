@@ -38,7 +38,9 @@
     "openai-codex/gpt-6-astra",
     "cursor/cursor-grok-4.6-high-fast",
     "cursor/cursor-grok-4.6-medium-fast",
-    "cursor/cursor-grok-4.6-xhigh-fast"
+    "cursor/cursor-grok-4.6-xhigh-fast",
+    "opencode-go/deepseek-v4.1-flash",
+    "opencode-go/glm-5.3-flash"
   ],
   "transport": "sse",
   "npmCommand": [
