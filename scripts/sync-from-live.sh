@@ -120,24 +120,6 @@ for directory in "${SYNC_DIRS[@]}"; do
 done
 sync_dir "$SOURCE_DIR/scripts" "$REPO_DIR/agent-scripts"
 
-python3 - "$REPO_DIR/agents/verifiers/or-gpt4o.md" <<'PY'
-import re
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-if path.exists():
-    text = path.read_text()
-    text, count = re.subn(
-        r"(?m)^\s*OPENAI_API_KEY=.*\n?",
-        "",
-        text,
-    )
-    if count > 1:
-        raise SystemExit(f"expected at most one OPENAI_API_KEY assignment in {path}")
-    path.write_text(text)
-PY
-
 skill_stage="$(mktemp -d)"
 trap 'rm -rf "$skill_stage"' EXIT
 for skill in bro msw cmux; do

@@ -31,10 +31,9 @@ Set these variables before starting Pi:
 
 ```bash
 export NAHCROF_API_KEY='your Nahcrof API key'
-export OPENAI_API_KEY='your OpenRouter API key for the gpt-4o verifier'
 ```
 
-The committed `models.json` contains `${NAHCROF_API_KEY}` at `providers.nahcrof.apiKey`. Pi resolves this environment variable at runtime. The committed OpenRouter verifier profile omits its embedded key, so the child process inherits `OPENAI_API_KEY` from the environment.
+The committed `models.json` contains `${NAHCROF_API_KEY}` at `providers.nahcrof.apiKey`. Pi resolves this environment variable at runtime.
 
 Other providers use Pi's login system or their own local login flow. Placeholder values such as `dummy` and `cursor-responses-local` are intentional configuration values, not credentials.
 
@@ -102,7 +101,7 @@ The bridge learns Cursor model context limits at runtime and stores them in `.da
 
 ### 4. Set credentials
 
-Export `NAHCROF_API_KEY` and `OPENAI_API_KEY` as shown above. Start Pi after setup and complete the normal login flow for Anthropic, OpenAI Codex, zai, and any other account-backed provider you use.
+Export `NAHCROF_API_KEY` as shown above. Start Pi after setup and complete the normal login flow for Anthropic, OpenAI Codex, zai, and any other account-backed provider you use.
 
 ### 5. Run the restore
 
