@@ -10,7 +10,7 @@ The repository includes:
 - all live agent definitions, documentation, templates, extensions, and agent helper scripts;
 - the local `bro`, `msw`, and `cmux` skills;
 - `skills/.skill-lock.json`, which identifies the source of 125 managed skills;
-- `skills/symlinks.json`, which records all 130 Pi skill links into `~/.agents/skills`;
+- `skills/symlinks.json`, which records all 131 Pi skill links into `~/.agents/skills`;
 - `extension-manifest.json`, which records installed npm extensions, Pi packages, and local extension repositories;
 - `scripts/sync-from-live.sh`, which regenerates this backup from the live machine;
 - `scripts/scan-secrets.py`, which checks the repository and staged changes for likely credentials.

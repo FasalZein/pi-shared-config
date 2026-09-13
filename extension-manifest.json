@@ -3,9 +3,11 @@
   "sourceHome": "/Users/tothemoon",
   "npmExtensions": {
     "@cortexkit/pi-anthropic-auth": "1.12.0",
-    "@howaboua/pi-auto-trees": "0.1.13",
-    "@howaboua/pi-codex-conversion": "3.0.29",
+    "@eko24ive/pi-ask": "1.2.0",
+    "@howaboua/pi-auto-trees": "0.1.14",
+    "@howaboua/pi-codex-conversion": "3.0.31",
     "@hsingjui/pi-hooks": "0.0.2",
+    "@ian-pascoe/pi-lsp": "0.4.1",
     "@tomooshi/condensed-milk-pi": "1.9.0",
     "pi-fancy-footer": "3.0.1",
     "pi-grok-cli": "0.8.2"
@@ -14,14 +16,15 @@
     {
       "source": "git:github.com/prateekmedia/pi-hooks",
       "extensions": [
-        "-ralph-loop/ralph-loop.ts"
+        "-ralph-loop/ralph-loop.ts",
+        "-lsp/lsp.ts",
+        "-lsp/lsp-tool.ts"
       ]
     },
     "git:github.com/edxeth/pi-gpt-config",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
     "git:github.com/edxeth/pi-better-skills",
-    "../../Dev/AI/pi/extensions/pi-ask",
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-fancy-footer",
     "npm:@howaboua/pi-auto-trees",
@@ -35,7 +38,9 @@
     "git:github.com/code-yeongyu/pi-ast-grep",
     "../../Dev/AI/pi/extensions/pi-linear",
     "../../Dev/AI/pi/extensions/pi-fold",
-    "npm:pi-grok-cli"
+    "npm:pi-grok-cli",
+    "npm:@eko24ive/pi-ask",
+    "npm:@ian-pascoe/pi-lsp"
   ],
   "localExtensions": [
     {
@@ -84,7 +89,7 @@
       "name": "pi-linear",
       "status": "git",
       "remote": "https://github.com/FasalZein/pi-linear.git",
-      "commit": "30c8113661e7a214fad2f77ca3600f97057de815"
+      "commit": "f7cd53364795af277a465abab62cc8272dc2c173"
     },
     {
       "name": "pi-markdown-blocks",

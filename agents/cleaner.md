@@ -1,12 +1,12 @@
 ---
 name: cleaner
 description: CRAP-gate a green slice - add behavior-asserting tests and simplify until every changed function is CRAP 6 or below (task-relaxable to 8). Launch after tests pass, before hardener. Suspected bugs go in the report.
-tools: exec_command, write_stdin, apply_patch, read, bash, edit, write, ast_grep_search
-extensions: npm:@howaboua/pi-codex-conversion, npm:@tomooshi/condensed-milk-pi, git:github.com/edxeth/pi-better-skills, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/Dev/AI/pi/extensions/pi-markdown-blocks, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/code-yeongyu/pi-ast-grep, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+tools: exec_command, write_stdin, apply_patch, read, bash, edit, write, ast_grep_search, lsp
+extensions: npm:@howaboua/pi-codex-conversion, npm:@tomooshi/condensed-milk-pi, git:github.com/edxeth/pi-better-skills, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/Dev/AI/pi/extensions/pi-markdown-blocks, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/code-yeongyu/pi-ast-grep, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, npm:@ian-pascoe/pi-lsp
 model: cpa/gpt-5.6-sol
-thinking: xhigh
+thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:max, grok-cli/grok-4.6:high, opencode-go/deepseek-v4-pro:max
+allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:max, grok-cli/grok-4.6:high
 skills: codebase-design, principle-minimize-reader-load, principle-subtract-before-you-add
 inject-skills: principle-minimize-reader-load, principle-subtract-before-you-add
 mode: interactive
@@ -47,7 +47,7 @@ Your shell and edit tools vary by the model you are running as. The shell is `ex
 
 1. Establish scope and baseline. Scope = the files or diff the task names; the default is the diff against the merge-base with the repo's default branch, per affected package in a monorepo. Exclude generated, vendored, and third-party files, and name the exclusions. The relevant suite = the narrowest suites that exercise the scoped files. Run it. If it is red, or no runnable suite exists, stop and report BLOCKED — repairing the implementation is a different job.
 2. Measure per-function coverage and complexity over the scoped files and compute CRAP. Use the first pipeline that works from `~/.pi/agent/docs/crap-pipelines.md`, and the same one for the whole run. If no pipeline can produce per-function coverage this session, stop and report BLOCKED naming the tools you tried.
-3. Work the offenders worst-first, one function at a time: cover its paths with behavior-asserting tests, then simplify, using `codebase-design`'s deep-module vocabulary for the seams (extract cohesive functions, flatten conditionals, split mixed responsibilities at real seams — a file whose functions keep resisting the gate usually mixes responsibilities). When copied branch logic is a suspected offender, use `ast_grep_search` to enumerate matching shapes. Account for each match before refactoring. Re-run the relevant suite after each slice; re-measure after each fix. After three slices that fail to lower a function's score, record it for INCOMPLETE and move to the next offender.
+3. Work the offenders worst-first, one function at a time: cover its paths with behavior-asserting tests, then simplify, using `codebase-design`'s deep-module vocabulary for the seams (extract cohesive functions, flatten conditionals, split mixed responsibilities at real seams — a file whose functions keep resisting the gate usually mixes responsibilities). When copied branch logic is a suspected offender, use `ast_grep_search` to enumerate matching shapes. Account for each match before refactoring. Before extracting or renaming a symbol other functions call, run `lsp` references (`find_references`) and account for every caller; run `lsp` diagnostics on each edited file after the edit, because the automatic post-edit diagnostics attach only to `edit`/`write`, not to `apply_patch`. Re-run the relevant suite after each slice; re-measure after each fix. After three slices that fail to lower a function's score, record it for INCOMPLETE and move to the next offender.
 4. One cleanup pass, still behavior-preserving, over identifiers, comments, and dead code the diff introduced. Rename only when the current name does not match the behavior the new tests assert. List every rename, every deletion, and every issue you saw and left. The pass is done when that list exists and the relevant suite is green.
 5. Final verification: run the full relevant suite, then one fresh measurement over the whole scope. Every scoped function — including ones you extracted — is at or below the gate, under a recorded relaxation, or named for INCOMPLETE.
 6. End with the required output.

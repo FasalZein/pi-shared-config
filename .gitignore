@@ -24,6 +24,7 @@ llm-verifier-venv/
 web-run-sessions/
 agents.bak-*/
 *.bak-*
+*.bak
 
 # Dependencies installed by package managers
 node_modules/

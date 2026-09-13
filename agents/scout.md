@@ -1,7 +1,7 @@
 ---
 name: scout
 description: Codebase reconnaissance in two sizes - quick lookup ("where is X", "does Y exist") returns a direct answer plus paths; recon maps a feature or subsystem into a report artifact for a downstream brief. A file whose path the parent already holds is cheaper to read in place.
-extensions: ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/lsp/lsp-tool.ts, git:github.com/code-yeongyu/pi-ast-grep, ~/Dev/AI/pi/extensions/pi-fold, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/code-yeongyu/pi-ast-grep, ~/Dev/AI/pi/extensions/pi-fold, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,grep,find,ls,bash,ast_grep_search,lsp,fold
 skills: how, principle-guard-the-context-window
 inject-skills: principle-guard-the-context-window

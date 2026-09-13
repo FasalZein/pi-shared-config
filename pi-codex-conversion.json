@@ -37,7 +37,8 @@
     "responsesCompaction": false,
     "version": "v1",
     "v2UserMessageRetention": 64,
-    "portableSummary": false
+    "portableSummary": false,
+    "hybridCompaction": false
   },
   "voice": {
     "protocol": "v3",
@@ -66,7 +67,7 @@
     "cacheDiagnostics": "off",
     "harnessIdentifierHeader": false
   },
-  "executionMode": "code",
+  "executionMode": "notebook",
   "notebook": {
     "maxHeapMiB": 4096
   }

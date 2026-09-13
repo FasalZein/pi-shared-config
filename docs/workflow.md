@@ -42,7 +42,7 @@ scout ──► worker ──► cleaner ──► hardener ──► reviewer �
 - **Grilling happens in the main chat by default** — decisions belong in your window.
 - A ticket is **done** on hardener's `HARDENED` verdict, not on the implementer's own word. Hardener's step-5 full-suite run against unmutated code is the landing receipt.
 - `cleaner` and `hardener` are write-capable and both read the uncommitted tree. Run them **one at a time**, never in parallel on the same slice.
-- All Linear reads and writes go through the `linear` agent; the orchestrator holds ticket-brief paths, never issue payloads.
+- Follow the detailed Linear routing policy in `~/.pi/agent/APPEND_SYSTEM.md`. Keep large payloads in request-scoped artifacts.
 
 ## When each agent fires
 
@@ -58,11 +58,11 @@ scout ──► worker ──► cleaner ──► hardener ──► reviewer �
 | `design-builder` | UI piece that can build headless / in parallel | You need to steer it live (→ design) |
 | `reviewer` | A plan needs a soundness check, or finished work needs review | — |
 | `researcher` | External/web questions needing sourced synthesis | Codebase questions (→ scout) |
-| `linear` | Any Linear read, write, or audit | A single named-issue fact needed this turn (parent calls the tool) |
+| `linear` | Linear discovery, complete briefs, thread synthesis, or delegated changes that fill the parent context | Exact authorized work with known arguments and compact verification |
 
 ## Special flows
 
-- **Huge foggy effort** → `wayfinder` skill in the main chat: chart a map of decision tickets on Linear, resolve one per session, hand off to `to-spec` when the fog clears.
+- **Huge foggy effort** → use `wayfinder` with human decisions in the main chat; delegate approved Linear map and ticket work with the required context handoff.
 - **Runnable design question** (state model, "what should it look like") → `prototype` skill; UI prototypes can run through the design agent.
 - **Bug that resists a first look** → `diagnosing-bugs` skill: build the tight red loop first, then fix.
 - **Incoming raw issues** → `triage` skill; publishes agent-ready briefs to Linear.

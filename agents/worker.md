@@ -1,12 +1,12 @@
 ---
 name: worker
 description: Implements one scoped code slice or fix - writes code, runs targeted tests, commits, reports what changed. Launch it with the brief inlined (Ticket/Recon/State via !`cat` placeholders). UI work goes to design or design-builder; edits the parent can make directly stay in the parent.
-extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/lsp/lsp.ts, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/lsp/lsp-tool.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,edit,grep,find,ls,bash,lsp
 inject-skills: implement, principle-prove-it-works
 skills: implement, tdd, principle-prove-it-works, principle-type-system-discipline
 model: cpa/gpt-5.6-sol
-thinking: high
+thinking: medium
 allow-model-override: true
 allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:high, grok-cli/grok-4.6:high
 mode: background

@@ -1,8 +1,8 @@
 ---
 name: design
 description: UI in a visible pane, two gears - direct (critique, design direction) or build (implement, restyle, polish). Launch when the user should watch or steer the work.
-extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, npm:pi-fancy-footer, git:github.com/edxeth/pi-subagents, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
-tools: read,write,edit,grep,find,ls,bash
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, npm:pi-fancy-footer, git:github.com/edxeth/pi-subagents, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, npm:@ian-pascoe/pi-lsp, npm:@eko24ive/pi-ask
+tools: read,write,edit,grep,find,ls,bash,lsp,ask_user
 skills: design-craft, laws-of-ux, design-md, make-interfaces-feel-better, design-qa, agent-browser, better-ui, better-typography, better-colors, better-accessibility, better-layout, coss, shadcn, prototype
 inject-skills: design-craft
 model: anthropic/claude-opus-5
@@ -39,7 +39,7 @@ When the work is verified, post the final report and stay open for follow-ups; t
 
 ## Capability contract
 
-Use the tools listed for this session. Before claiming a tool is unavailable, call the closest listed one and report the real error. Prefer exact project paths and bounded searches.
+Use the tools listed for this session. Before claiming a tool is unavailable, call the closest listed one and report the real error. After every TypeScript edit, read the post-edit `lsp` diagnostics and fix type errors before moving on; use `lsp` `find_references` before renaming a component or prop. Prefer exact project paths and bounded searches.
 
 ## Skill chain
 

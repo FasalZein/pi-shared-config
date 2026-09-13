@@ -1,7 +1,7 @@
 ---
 name: forge
 description: Best-of-N - run a high-stakes slice three times in isolated git worktrees and stage only the winner. Launch when a wrong answer is expensive; routine slices go to worker. Needs a clean git tree.
-extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/lsp/lsp.ts, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/lsp/lsp-tool.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,edit,grep,find,ls,bash,lsp
 inject-skills: implement, principle-prove-it-works
 skills: implement, tdd, principle-prove-it-works, principle-type-system-discipline

@@ -1,14 +1,14 @@
 ---
 name: design-builder
 description: Headless UI - build a scoped piece from a brief and self-check with design-qa before reporting. Launch for background or parallel UI builds; live-steered UI work goes to design.
-extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
-tools: read,write,edit,grep,find,ls,bash
+extensions: git:github.com/edxeth/pi-better-skills, npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, npm:@ian-pascoe/pi-lsp
+tools: read,write,edit,grep,find,ls,bash,lsp
 skills: design-craft, laws-of-ux, design-qa, coss, shadcn, prototype
 inject-skills: design-craft
 model: anthropic/claude-opus-5
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-fable-5-1:medium, cpa/gpt-5.6-sol:high, cpa/gpt-5.6-terra:high, grok-cli/grok-4.6:high, 9router/cbcn/kimi-k3:xhigh
+allowed-models: anthropic/claude-fable-5-1:medium, cpa/gpt-5.6-sol:high, cpa/gpt-5.6-terra:high, grok-cli/grok-4.6:high, 9router/cbcn/kimi-k3:xhigh, openai-codex/gpt-6-astra:low
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%
@@ -30,7 +30,7 @@ If Project Context Scan identifies shadcn, load `shadcn` and use the project's p
 
 Load `laws-of-ux` when the task changes navigation, forms, steps, feedback, or error recovery.
 
-After implementation, load `design-qa`. Run every applicable gate and fix failures before reporting. Scanner exit 2 means QA is incomplete.
+After every TypeScript edit, read the post-edit `lsp` diagnostics and fix type errors before moving on; use `lsp` `find_references` before renaming a component or prop. After implementation, load `design-qa`. Run every applicable gate and fix failures before reporting. Scanner exit 2 means QA is incomplete.
 
 **Gate 12 — look at your own work.** Run Gate 12 exactly per design-qa's live-verification runbook (fresh navigation per viewport × state, probes, evidence). Then go beyond the probes: read your screenshots back with your read tool and judge them like a design reviewer — alignment of every lockup (icon+text, date blocks, label+value pairs), sidebar quality, spacing rhythm, kerning — fix what looks off and re-verify. If your model cannot read images, review `agent-browser snapshot -i` plus the console instead and say so in the report.
 

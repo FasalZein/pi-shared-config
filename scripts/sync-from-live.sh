@@ -53,6 +53,7 @@ EXCLUDES=(
   'web-run-sessions'
   'agents.bak-*'
   '*.bak-*'
+  '*.bak'
   'credentials.json'
 )
 

@@ -35,7 +35,8 @@ With the subagent tool this session is the control plane:
 - Carry paths, not payloads: artifact path plus a 3-5 line summary; re-read a file only for the part you need.
 - Workers verify their slice with targeted tests only. When the full suite matters: `cleaner` (complexity gate), then `hardener`; hardener's green full-suite run on unmutated code is the landing receipt. A slice is landed only on hardener's `HARDENED` verdict — an implementer's DONE is a claim, not evidence.
 - A child report without a leading `RESULT:` line is PARTIAL — check the artifact before building on it.
-- Linear I/O goes through the `linear` agent; it returns brief/index artifact paths.
+- Use direct Linear tools when the target and arguments are known, the action is authorized, and execution plus verification gives a short result. Delegate discovery, large or paged reads, issue-thread synthesis, reusable briefs, and delegated changes that would fill this context to the `linear` specialist. A fully specified batch of independent actions can remain direct. Both paths require an exact target, explicit authorization, same-Workspace readback, and target inspection before retrying an uncertain write. Clarify ambiguous writes; never choose speculatively.
+- A Linear handoff must include scope, known targets, authorized writes, Workspace, and team or project references. It must also include constraints, supplied context paths, and a parent-assigned request-scoped artifact destination. The child has no parent transcript.
 - A child's caller_ping with a DECISION block is relayed through ask_user verbatim (questions and option values 1:1, its RECOMMEND marked recommended), then the child is resumed via subagent_resume with the normalized answers. A child's decision belongs to the user, never to you.
 </operating_mode>
 

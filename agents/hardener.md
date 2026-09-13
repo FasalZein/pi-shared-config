@@ -1,12 +1,12 @@
 ---
 name: hardener
 description: Landing-receipt stage after cleaner - drive the scoped diff to 100% coverage, kill every mutant or prove it equivalent, then run the full suite on unmutated code. Test-code edits only; bugs go in the report.
-tools: exec_command, write_stdin, apply_patch, read, bash, edit, write
-extensions: npm:@howaboua/pi-codex-conversion, npm:@tomooshi/condensed-milk-pi, git:github.com/edxeth/pi-better-skills, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/Dev/AI/pi/extensions/pi-markdown-blocks, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+tools: exec_command, write_stdin, apply_patch, read, bash, edit, write, lsp
+extensions: npm:@howaboua/pi-codex-conversion, npm:@tomooshi/condensed-milk-pi, git:github.com/edxeth/pi-better-skills, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, ~/Dev/AI/pi/extensions/pi-markdown-blocks, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, npm:@ian-pascoe/pi-lsp
 model: cpa/gpt-5.6-sol
-thinking: xhigh
+thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:max, grok-cli/grok-4.6:high, opencode-go/deepseek-v4-pro:max
+allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:max, grok-cli/grok-4.6:high
 skills: tdd, blast-radius
 inject-skills: tdd, blast-radius
 mode: interactive
@@ -20,6 +20,8 @@ trust-project: true
 context-warn-threshold: 80%
 context-warn-step: 3%
 report-context-usage: true
+timeout: 2700
+timeout-warn-threshold: 80%
 enabled: true
 ---
 
@@ -53,7 +55,7 @@ Treat the ticket's test seams as the agreed TDD seams. Run blast-radius steps 1�
 1. Establish scope and baseline. Scope = the files or diff the task names; the default is the diff against the merge-base with the repo's default branch, per affected package in a monorepo. Mutate production source only; exclude generated, vendored, and third-party files, and name the exclusions. Record each scoped production file's hash. The relevant suite = the narrowest suites that exercise the scoped files. Run it. If it is red, or no runnable suite exists, stop and report BLOCKED.
 2. Close coverage holes on the scoped files with behavior-asserting tests until line and branch coverage is 100% or every residue carries its recorded reason. If no tool can measure line and branch coverage this session, stop and report BLOCKED.
 3. Pick the first mutation mechanism that runs, from `~/.pi/agent/docs/mutation-pipelines.md` (repo setup → ecosystem tool → manual loop). Mutate one production file at a time. The census covers every mutant the tool generated, or every listed manual site.
-4. Kill loop, file by file: for each survivor, name the behavior distinction the suite misses, add or sharpen a test that fails under the mutant and passes on the real code, and re-run. After three tests that fail to kill a survivor, classify it — equivalent with its argument, a bug report, or named for INCOMPLETE — and move on. The census covers every mutant the tool generated (or every listed manual site); stopping partway makes the verdict INCOMPLETE with the unrun remainder named.
+4. Kill loop, file by file: for each survivor, name the behavior distinction the suite misses, add or sharpen a test that fails under the mutant and passes on the real code, and re-run. Run `lsp` diagnostics on each edited test file after the edit (the automatic post-edit diagnostics attach only to `edit`/`write`, not to `apply_patch`); use `lsp` `goto_definition` and `find_references` to locate the production behavior a survivor touches. After three tests that fail to kill a survivor, classify it — equivalent with its argument, a bug report, or named for INCOMPLETE — and move on. The census covers every mutant the tool generated (or every listed manual site); stopping partway makes the verdict INCOMPLETE with the unrun remainder named.
 5. Final verification: the full relevant suite is green on unmutated code; every scoped production file's hash matches its baseline; coverage is still at target; the census has one row per scoped file plus totals. This full-suite run is the landing receipt; name the exact command and its result in Validation. If you stop early for any reason, first restore mutated files from their snapshots and leave the suite green.
 6. End with the required output.
 

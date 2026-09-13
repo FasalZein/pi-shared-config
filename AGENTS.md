@@ -23,3 +23,11 @@ Ship the minimum code that solves the problem — code a senior engineer would c
 ## Surgical Changes
 
 Every changed line traces to the request. Match existing style; leave adjacent code, comments, formatting, and naming as found; mention unrelated dead code rather than deleting it. Remove whatever your own change made unused — imports, variables, functions, files, tests.
+
+## Tooling
+
+- LSP: `@ian-pascoe/pi-lsp` provides the `lsp` tool and post-edit diagnostics; servers are defined
+  in `~/.pi/agent/settings.json` under `lsp.servers` (TypeScript `tsgo --lsp --stdio`, Python
+  `basedpyright-langserver`, Rust `rust-analyzer` from `rustup component add rust-analyzer`).
+  Post-edit diagnostics attach to `edit`/`write` only, not `apply_patch`; call `lsp` diagnostics
+  after an `apply_patch`. Verified 2026-09-09 on all three languages.

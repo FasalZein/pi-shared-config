@@ -27,7 +27,7 @@
     "zai/glm-5.3",
     "zai/glm-5.3-flash",
     "opencode-go/deepseek-v4-pro",
-    "nahcrof/deepseek-v4-flash-0731",
+    "nahcrof/deepseek-v4.1-flash",
     "opencode-go/deepseek-v4-flash",
     "anthropic/claude-opus-5",
     "cloudflare-workers-ai/@cf/zai-org/glm-5.2",
@@ -59,14 +59,15 @@
     {
       "source": "git:github.com/prateekmedia/pi-hooks",
       "extensions": [
-        "-ralph-loop/ralph-loop.ts"
+        "-ralph-loop/ralph-loop.ts",
+        "-lsp/lsp.ts",
+        "-lsp/lsp-tool.ts"
       ]
     },
     "git:github.com/edxeth/pi-gpt-config",
     "git:github.com/edxeth/pi-tasks",
     "npm:@tomooshi/condensed-milk-pi",
     "git:github.com/edxeth/pi-better-skills",
-    "../../Dev/AI/pi/extensions/pi-ask",
     "git:github.com/edxeth/pi-subagents",
     "npm:pi-fancy-footer",
     "npm:@howaboua/pi-auto-trees",
@@ -80,9 +81,11 @@
     "git:github.com/code-yeongyu/pi-ast-grep",
     "../../Dev/AI/pi/extensions/pi-linear",
     "../../Dev/AI/pi/extensions/pi-fold",
-    "npm:pi-grok-cli"
+    "npm:pi-grok-cli",
+    "npm:@eko24ive/pi-ask",
+    "npm:@ian-pascoe/pi-lsp"
   ],
-  "lastChangelogVersion": "0.84.4",
+  "lastChangelogVersion": "0.85.1",
   "extensions": [
     "/Users/tothemoon/Dev/AI/pi/extensions/pi-ru",
     "/Users/tothemoon/Dev/AI/pi/extensions/pi-hub"
@@ -159,5 +162,159 @@
   },
   "images": {
     "blockImages": false
+  },
+  "lsp": {
+    "servers": {
+      "typescript": {
+        "command": "tsgo",
+        "args": [
+          "--lsp",
+          "--stdio"
+        ],
+        "languages": [
+          {
+            "extensions": [
+              ".ts",
+              ".mts",
+              ".cts"
+            ],
+            "languageId": "typescript"
+          },
+          {
+            "extensions": [
+              ".tsx"
+            ],
+            "languageId": "typescriptreact"
+          }
+        ],
+        "rootMarkers": [
+          "tsconfig.json",
+          "package.json"
+        ],
+        "requireRootMarker": true
+      },
+      "python": {
+        "command": "basedpyright-langserver",
+        "args": [
+          "--stdio"
+        ],
+        "languages": [
+          {
+            "extensions": [
+              ".py",
+              ".pyi"
+            ],
+            "languageId": "python"
+          }
+        ],
+        "rootMarkers": [
+          "pyproject.toml",
+          "setup.py",
+          ".git"
+        ]
+      },
+      "rust": {
+        "command": "rust-analyzer",
+        "args": [],
+        "languages": [
+          {
+            "extensions": [
+              ".rs"
+            ],
+            "languageId": "rust"
+          }
+        ],
+        "rootMarkers": [
+          "Cargo.toml"
+        ]
+      },
+      "oxlint": {
+        "command": "bunx",
+        "args": [
+          "oxlint",
+          "--lsp"
+        ],
+        "languages": [
+          {
+            "extensions": [
+              ".ts",
+              ".mts",
+              ".cts"
+            ],
+            "languageId": "typescript"
+          },
+          {
+            "extensions": [
+              ".tsx"
+            ],
+            "languageId": "typescriptreact"
+          },
+          {
+            "extensions": [
+              ".js",
+              ".mjs",
+              ".cjs"
+            ],
+            "languageId": "javascript"
+          },
+          {
+            "extensions": [
+              ".jsx"
+            ],
+            "languageId": "javascriptreact"
+          }
+        ],
+        "rootMarkers": [
+          ".oxlintrc.json"
+        ],
+        "requireRootMarker": true
+      },
+      "oxfmt": {
+        "command": "bunx",
+        "args": [
+          "oxfmt",
+          "--lsp"
+        ],
+        "languages": [
+          {
+            "extensions": [
+              ".ts",
+              ".mts",
+              ".cts"
+            ],
+            "languageId": "typescript"
+          },
+          {
+            "extensions": [
+              ".tsx"
+            ],
+            "languageId": "typescriptreact"
+          },
+          {
+            "extensions": [
+              ".js",
+              ".mjs",
+              ".cjs"
+            ],
+            "languageId": "javascript"
+          },
+          {
+            "extensions": [
+              ".jsx"
+            ],
+            "languageId": "javascriptreact"
+          }
+        ],
+        "rootMarkers": [
+          ".oxfmtrc.json"
+        ],
+        "requireRootMarker": true
+      }
+    },
+    "timeouts": {
+      "initializeMs": 45000,
+      "requestMs": 3000,
+      "diagnosticsMs": 3000
+    }
   }
 }

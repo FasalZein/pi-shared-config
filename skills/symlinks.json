@@ -16,6 +16,7 @@
     "better-writing": "../../../.agents/skills/better-writing",
     "blast-radius": "../../../.agents/skills/blast-radius",
     "break": "../../../.agents/skills/break",
+    "build-design-library": "../../../.agents/skills/build-design-library",
     "code-review": "../../../.agents/skills/code-review",
     "codebase-design": "../../../.agents/skills/codebase-design",
     "context7": "../../../.agents/skills/context7",

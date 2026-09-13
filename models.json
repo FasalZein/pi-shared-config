@@ -336,19 +336,24 @@
           }
         },
         {
-          "id": "deepseek-v4-flash-0731",
-          "name": "DeepSeek-V4 Flash (Q4_0)",
+          "id": "deepseek-v4.1-flash",
+          "name": "DeepSeek-V4.1 Flash (Q8_0)",
           "contextWindow": 1000000,
           "maxTokens": 131072,
           "reasoning": true,
           "input": [
             "text"
           ],
+          "thinkingLevelMap": {
+            "minimal": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
           "cost": {
-            "input": 0.12,
-            "cacheRead": 0.02,
-            "cacheWrite": 0.12,
-            "output": 0.21
+            "input": 0.1,
+            "cacheRead": 0.003,
+            "cacheWrite": 0.1,
+            "output": 0.5
           }
         },
         {
