@@ -1,13 +1,14 @@
 ---
 name: scout
 description: Codebase reconnaissance in two sizes - quick lookup ("where is X", "does Y exist") returns a direct answer plus paths; recon maps a feature or subsystem into a report artifact for a downstream brief. A file whose path the parent already holds is cheaper to read in place.
-extensions: ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/code-yeongyu/pi-ast-grep, ~/Dev/AI/pi/extensions/pi-fold, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
-tools: read,write,grep,find,ls,bash,ast_grep_search,lsp,fold
+extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.8.2
+tools: read,write,grep,find,ls,bash
 skills: how, principle-guard-the-context-window
 inject-skills: principle-guard-the-context-window
-model: cursor/cursor-grok-4.6-high-fast
+model: openai-codex/gpt-5.6-sol
+thinking: low
 allow-model-override: true
-allowed-models: cursor/cursor-grok-4.6-medium-fast, cursor/cursor-grok-4.6-xhigh-fast, grok-cli/grok-4.6:high, cpa/gpt-5.6-sol:low, anthropic/claude-opus-5:low, opencode-go/deepseek-v4.1-flash:max, opencode-go/deepseek-v4-flash:max, opencode-go/deepseek-v4-pro:max, zai/glm-5.3:high, cpa/gpt-5.6-luna:xhigh
+allowed-models: openai-codex/gpt-5.6-sol:low, anthropic/claude-opus-5:low, openai-codex/gpt-5.6-luna:xhigh
 mode: background
 context-warn-threshold: 80%
 report-context-usage: true
@@ -81,9 +82,8 @@ FILES: most relevant absolute file path(s).
 
 ## Search discipline
 
-- For any fan-out (scanning many files, counting/grouping matches, reading a tree), use one `fold` call — its nested reads and greps stay out of your context and only the returned value lands. A `bash` loop with compact output is the fallback.
-- Prefer `lsp` for symbol definitions, references, and types. Fall back to text search when the language server cannot answer.
-- Use `ast_grep_search` only for syntax shapes text search cannot express reliably (calls regardless of formatting, structural patterns, API-migration shapes). Lexical first, AST second.
+- For any fan-out, use one bounded `bash` command with compact output.
+- Use targeted text search for symbol definitions and references. Read the best matches before searching again.
 - When the task names a branch, a commit, or "the changes", start from read-only git (`git diff main...HEAD --stat`) rather than grep — the diff is the shortest path to the file list.
 - Search for bare identifiers, not code syntax; plain text beats regex. Once a grep stops narrowing the candidate set, stop grepping and `read` the top hit.
 - When an identifier has multiple naming conventions, run `grep` for each (snake_case, PascalCase, camelCase).

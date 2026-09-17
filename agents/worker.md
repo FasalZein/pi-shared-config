@@ -1,14 +1,14 @@
 ---
 name: worker
 description: Implements one scoped code slice or fix - writes code, runs targeted tests, commits, reports what changed. Launch it with the brief inlined (Ticket/Recon/State via !`cat` placeholders). UI work goes to design or design-builder; edits the parent can make directly stay in the parent.
-extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
-tools: read,write,edit,grep,find,ls,bash,lsp
+extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.8.2
+tools: read,write,edit,grep,find,ls,bash
 inject-skills: implement, principle-prove-it-works
 skills: implement, tdd, principle-prove-it-works, principle-type-system-discipline
-model: cpa/gpt-5.6-sol
+model: openai-codex/gpt-5.6-sol
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:high, grok-cli/grok-4.6:high
+allowed-models: anthropic/claude-opus-5:medium
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%
@@ -51,7 +51,7 @@ Commit to the **current branch**. Do not create, switch, force-push, or rebase b
 
 Keep the change surgical and let existing patterns carry the shape.
 
-Before changing a shared symbol, run `lsp` references. Account for every caller as changed or deliberately unchanged.
+Before changing a shared symbol, search for every reference. Account for every caller as changed or deliberately unchanged.
 
 Treat automatic LSP diagnostics as early feedback. Run the relevant typecheck or lint command when one exists.
 
@@ -66,6 +66,8 @@ Your slice is verified when every behaviour you changed is accounted for by one 
 **Hang-proof every command.** Run test and build commands without watch mode. Use a timeout derived from their normal runtime and below this agent's whole-run `timeout`.
 
 ### 3. Report
+
+Before `DONE`, stop every process you started and verify its child processes and listeners are gone.
 
 
 If you produce a session artifact, write it under `$HOME/.pi/artifacts/worker/` and tell the parent its absolute path. Do not decide where it ultimately lives.

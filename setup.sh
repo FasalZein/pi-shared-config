@@ -39,7 +39,10 @@ restore_managed_skills() {
   fi
 
   cp "$SCRIPT_DIR/skills/.skill-lock.json" "$home_lock"
-  (cd "$HOME" && npx --yes skills experimental_install) || result=$?
+  set +e
+  (cd "$HOME" && npx --yes skills experimental_install)
+  result=$?
+  set -e
 
   if [[ "$had_lock" == "true" ]]; then
     cp "$backup_lock" "$home_lock"
@@ -57,15 +60,9 @@ echo ""
 
 mkdir -p "$PI_AGENT_DIR"
 
-if [[ -f "$PI_AGENT_DIR/models.json" ]]; then
-  echo "==> Keeping existing models.json (it can contain live credentials)"
-else
-  copy_file "$SCRIPT_DIR/models.json" "$PI_AGENT_DIR/models.json"
-fi
+copy_file "$SCRIPT_DIR/models.json" "$PI_AGENT_DIR/models.json"
 
-settings_was_existing=false
 if [[ -f "$PI_AGENT_DIR/settings.json" ]]; then
-  settings_was_existing=true
   node "$SCRIPT_DIR/scripts/merge-settings.mjs" "$SCRIPT_DIR/settings.json" "$PI_AGENT_DIR/settings.json"
   echo "==> Reconciled packages and kept existing personal settings"
 else
@@ -79,9 +76,6 @@ for file in \
   keybindings.json \
   fancy-footer.json \
   pi-codex-conversion.json \
-  pi-hub.json \
-  pi-auto-trees.json \
-  pi-vcc-config.json \
   proxies.json \
   trust.json \
   oxlint.config.ts \
@@ -89,59 +83,19 @@ for file in \
   copy_file "$SCRIPT_DIR/$file" "$PI_AGENT_DIR/$file"
 done
 
-echo "==> Copying agents, documentation, templates, themes, extensions, lint rules, and agent scripts"
-for directory in agents docs templates themes extensions oxlint; do
+echo "==> Copying agents, documentation, templates, themes, lint rules, and agent scripts"
+for directory in agents docs templates themes oxlint; do
   copy_dir_contents "$SCRIPT_DIR/$directory" "$PI_AGENT_DIR/$directory"
 done
 copy_dir_contents "$SCRIPT_DIR/agent-scripts" "$PI_AGENT_DIR/scripts"
 
-python3 - "$SCRIPT_DIR/extension-manifest.json" "$PI_AGENT_DIR" "$settings_was_existing" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-manifest_path = Path(sys.argv[1])
-target = Path(sys.argv[2])
-settings_was_existing = sys.argv[3] == "true"
-source_home = json.loads(manifest_path.read_text())["sourceHome"]
-current_home = str(Path.home())
-if source_home != current_home:
-    roots = [
-        target / "AGENTS.md",
-        target / "APPEND_SYSTEM.md",
-        target / "REALTIME-SYSTEM-PROMPT.md",
-        target / "keybindings.json",
-        target / "fancy-footer.json",
-        target / "pi-codex-conversion.json",
-        target / "pi-hub.json",
-        target / "pi-auto-trees.json",
-        target / "pi-vcc-config.json",
-        target / "proxies.json",
-        target / "trust.json",
-        target / "oxlint.config.ts",
-        target / "package.json",
-        target / "agents",
-        target / "docs",
-        target / "templates",
-        target / "themes",
-        target / "extensions",
-        target / "oxlint",
-        target / "scripts",
-    ]
-    if not settings_was_existing:
-        roots.append(target / "settings.json")
-    for root in roots:
-        files = [root] if root.is_file() else list(root.rglob("*")) if root.exists() else []
-        for path in files:
-            if not path.is_file():
-                continue
-            try:
-                text = path.read_text()
-            except UnicodeDecodeError:
-                continue
-            if source_home in text:
-                path.write_text(text.replace(source_home, current_home))
-PY
+echo "==> Replacing local extensions with the retained portable files"
+if [[ -d "$PI_AGENT_DIR/extensions" ]]; then
+  extensions_backup="$PI_AGENT_DIR/extensions.backup-$(date +%Y%m%d%H%M%S)"
+  mv "$PI_AGENT_DIR/extensions" "$extensions_backup"
+  echo "    previous extensions: $extensions_backup"
+fi
+copy_dir_contents "$SCRIPT_DIR/extensions" "$PI_AGENT_DIR/extensions"
 
 if [[ "$INSTALL_CONFIG_DEPENDENCIES" == "true" ]]; then
   if command -v npm >/dev/null 2>&1; then

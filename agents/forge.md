@@ -1,14 +1,14 @@
 ---
 name: forge
 description: Best-of-N - run a high-stakes slice three times in isolated git worktrees and stage only the winner. Launch when a wrong answer is expensive; routine slices go to worker. Needs a clean git tree.
-extensions: npm:@tomooshi/condensed-milk-pi, ~/.pi/agent/git/github.com/prateekmedia/pi-hooks/permission/permission.ts, npm:@ian-pascoe/pi-lsp, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
-tools: read,write,edit,grep,find,ls,bash,lsp
+extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.8.2
+tools: read,write,edit,grep,find,ls,bash
 inject-skills: implement, principle-prove-it-works
 skills: implement, tdd, principle-prove-it-works, principle-type-system-discipline
-model: cpa/gpt-5.6-sol
+model: openai-codex/gpt-5.6-sol
 thinking: high
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5:medium, cpa/gpt-5.6-terra:high, zai/glm-5.3:high, grok-cli/grok-4.6:high
+allowed-models: anthropic/claude-opus-5:medium, openai-codex/gpt-5.6-terra:high
 llm-as-a-verifier: true
 llm-as-a-verifier-candidates: 3
 llm-as-a-verifier-model: anthropic/claude-opus-5:high
@@ -59,7 +59,7 @@ Follow the injected `implement` skill as your operating procedure: implement the
 
 Keep the change surgical and let existing patterns carry the shape.
 
-Before changing a shared symbol, run `lsp` references. Account for every caller as changed or deliberately unchanged.
+Before changing a shared symbol, search for every reference. Account for every caller as changed or deliberately unchanged.
 
 Treat automatic LSP diagnostics as early feedback. Run the relevant typecheck or lint command when one exists.
 

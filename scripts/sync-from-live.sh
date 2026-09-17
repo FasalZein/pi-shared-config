@@ -7,7 +7,6 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
 SOURCE_HOME="$(cd "$SOURCE_DIR/../.." && pwd)"
 SKILL_STORE_DIR="${SKILL_STORE_DIR:-$SOURCE_HOME/.agents}"
-LOCAL_EXTENSIONS_DIR="${LOCAL_EXTENSIONS_DIR:-$SOURCE_HOME/Dev/AI/pi/extensions}"
 
 ROOT_FILES=(
   settings.json
@@ -15,18 +14,13 @@ ROOT_FILES=(
   keybindings.json
   fancy-footer.json
   pi-codex-conversion.json
-  pi-hub.json
-  pi-auto-trees.json
-  pi-vcc-config.json
   proxies.json
   trust.json
-  AGENTS.md
-  APPEND_SYSTEM.md
   REALTIME-SYSTEM-PROMPT.md
   oxlint.config.ts
-  package.json
 )
-SYNC_DIRS=(agents docs templates themes extensions oxlint)
+SYNC_DIRS=(templates themes oxlint)
+LIVE_AGENTS=(design-builder design researcher reviewer scout worker)
 EXCLUDES=(
   '.DS_Store'
   'auth.json'
@@ -78,8 +72,6 @@ sync_dir() {
 
 require_path "$SOURCE_DIR"
 require_path "$SKILL_STORE_DIR/.skill-lock.json"
-require_path "$SOURCE_DIR/npm/package.json"
-require_path "$LOCAL_EXTENSIONS_DIR"
 command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 is required" >&2; exit 1; }
 
@@ -88,6 +80,9 @@ for file in "${ROOT_FILES[@]}"; do
 done
 for directory in "${SYNC_DIRS[@]}"; do
   require_path "$SOURCE_DIR/$directory"
+done
+for agent in "${LIVE_AGENTS[@]}"; do
+  require_path "$SOURCE_DIR/agents/$agent.md"
 done
 for skill in bro msw cmux; do
   require_path "$SOURCE_DIR/skills/$skill"
@@ -101,22 +96,12 @@ for file in "${ROOT_FILES[@]}"; do
   fi
 done
 
-python3 - "$SOURCE_DIR/models.json" "$REPO_DIR/models.json" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-source, target = map(Path, sys.argv[1:])
-data = json.loads(source.read_text())
-try:
-    data["providers"]["nahcrof"]["apiKey"] = "${NAHCROF_API_KEY}"
-except (KeyError, TypeError) as error:
-    raise SystemExit(f"models.json has no providers.nahcrof.apiKey: {error}")
-target.write_text(json.dumps(data, indent=2) + "\n")
-PY
-
+cp "$SOURCE_DIR/models.json" "$REPO_DIR/models.json"
 for directory in "${SYNC_DIRS[@]}"; do
   sync_dir "$SOURCE_DIR/$directory" "$REPO_DIR/$directory"
+done
+for agent in "${LIVE_AGENTS[@]}"; do
+  cp "$SOURCE_DIR/agents/$agent.md" "$REPO_DIR/agents/$agent.md"
 done
 sync_dir "$SOURCE_DIR/scripts" "$REPO_DIR/agent-scripts"
 
@@ -126,6 +111,9 @@ for skill in bro msw cmux; do
   sync_dir "$SOURCE_DIR/skills/$skill" "$skill_stage/$skill"
 done
 cp "$SKILL_STORE_DIR/.skill-lock.json" "$skill_stage/.skill-lock.json"
+copy_metadata="$REPO_DIR/skills/managed-metadata.json"
+require_path "$copy_metadata"
+cp "$copy_metadata" "$skill_stage/managed-metadata.json"
 python3 - "$SOURCE_DIR/skills" "$skill_stage/symlinks.json" <<'PY'
 import json
 import os
@@ -137,79 +125,20 @@ target = Path(sys.argv[2])
 links = {
     entry.name: os.readlink(entry)
     for entry in sorted(source.iterdir(), key=lambda path: path.name)
-    if entry.is_symlink()
+    if entry.is_symlink() and entry.name not in {"to-prd", "to-slices"}
 }
 target.write_text(json.dumps({"version": 1, "links": links}, indent=2) + "\n")
 PY
 rsync -a --delete "$skill_stage/" "$REPO_DIR/skills/"
 
-python3 - "$SOURCE_DIR/npm/package.json" "$SOURCE_DIR/settings.json" "$LOCAL_EXTENSIONS_DIR" "$REPO_DIR/extension-manifest.json" "$SOURCE_HOME" <<'PY'
-import json
-import subprocess
-import sys
-from pathlib import Path
+require_path "$SOURCE_DIR/extensions/pi-tps.ts"
+require_path "$SOURCE_DIR/extensions/eko24ive-pi-ask.json"
+mkdir -p "$REPO_DIR/extensions"
+find "$REPO_DIR/extensions" -mindepth 1 -maxdepth 1 \
+  ! -name 'pi-tps.ts' ! -name 'eko24ive-pi-ask.json' -exec rm -rf {} +
+cp "$SOURCE_DIR/extensions/pi-tps.ts" "$REPO_DIR/extensions/pi-tps.ts"
+cp "$SOURCE_DIR/extensions/eko24ive-pi-ask.json" "$REPO_DIR/extensions/eko24ive-pi-ask.json"
 
-npm_path, settings_path, extensions_path, output_path = map(Path, sys.argv[1:5])
-source_home = sys.argv[5]
-
-def git_output(directory: Path, *args: str) -> str | None:
-    result = subprocess.run(
-        ["git", "-C", str(directory), *args],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        return None
-    value = result.stdout.strip()
-    return value or None
-
-npm_config = json.loads(npm_path.read_text())
-settings = json.loads(settings_path.read_text())
-extensions = []
-for directory in sorted((path for path in extensions_path.iterdir() if path.is_dir() and not path.name.startswith(".")), key=lambda path: path.name):
-    root = git_output(directory, "rev-parse", "--show-toplevel")
-    if root != str(directory):
-        extensions.append({
-            "name": directory.name,
-            "status": "not-a-git-repository",
-            "remote": None,
-            "commit": None,
-        })
-        continue
-    commit = git_output(directory, "rev-parse", "--verify", "HEAD")
-    extensions.append({
-        "name": directory.name,
-        "status": "git" if commit else "git-no-commits",
-        "remote": git_output(directory, "remote", "get-url", "origin"),
-        "commit": commit,
-    })
-
-manifest = {
-    "version": 1,
-    "sourceHome": source_home,
-    "npmExtensions": dict(sorted(npm_config.get("dependencies", {}).items())),
-    "piPackages": settings.get("packages", []),
-    "localExtensions": extensions,
-    "cursorBridge": {
-        "name": "pi-cursor",
-        "isPiExtension": False,
-        "privateRepository": "https://github.com/isthatyousaf/pi-cursor.git",
-        "repositoryAccess": "Only the FasalZein GitHub account can read this repository.",
-        "startCommand": "bun run start",
-        "loginCommand": "bun run login",
-        "endpoint": "http://127.0.0.1:4001/v1",
-        "modelProvider": "cursor",
-        "runtimeContextCache": ".data/context-windows.json",
-        "fastModelContextWindows": {
-            "cursor-grok-4.6-high-fast": 256000,
-            "cursor-grok-4.6-medium-fast": 256000,
-            "cursor-grok-4.6-xhigh-fast": 256000,
-        },
-    },
-}
-output_path.write_text(json.dumps(manifest, indent=2) + "\n")
-PY
-
+python3 "$SCRIPT_DIR/normalize-config.py"
 python3 "$SCRIPT_DIR/scan-secrets.py" "$REPO_DIR"
-echo "Sync complete. The live models.json was not changed."
+echo "Sync complete. Live files were not changed."

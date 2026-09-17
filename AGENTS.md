@@ -10,7 +10,7 @@ Report context size in tokens; byte counts only in technical artifacts that need
 
 New or fuzzy work: clarify -> PRD/spec -> slice -> implement each slice with verification -> review. Match your step to where the work is; implement only what has been shaped. Background and loop sessions execute their brief as given.
 
-Which agent fires when, the Linear flow, context habits: `~/.pi/agent/docs/workflow.md`.
+Which agent fires when and context habits: `~/.pi/agent/docs/workflow.md`.
 
 ## Think Before Coding
 
@@ -24,10 +24,6 @@ Ship the minimum code that solves the problem — code a senior engineer would c
 
 Every changed line traces to the request. Match existing style; leave adjacent code, comments, formatting, and naming as found; mention unrelated dead code rather than deleting it. Remove whatever your own change made unused — imports, variables, functions, files, tests.
 
-## Tooling
+## Verification
 
-- LSP: `@ian-pascoe/pi-lsp` provides the `lsp` tool and post-edit diagnostics; servers are defined
-  in `~/.pi/agent/settings.json` under `lsp.servers` (TypeScript `tsgo --lsp --stdio`, Python
-  `basedpyright-langserver`, Rust `rust-analyzer` from `rustup component add rust-analyzer`).
-  Post-edit diagnostics attach to `edit`/`write` only, not `apply_patch`; call `lsp` diagnostics
-  after an `apply_patch`. Verified 2026-09-09 on all three languages.
+Run `npm run verify` before handoff.

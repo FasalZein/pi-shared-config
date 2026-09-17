@@ -1,5 +1,10 @@
 {
-  "dependencies": {},
+  "name": "pi-shared-config",
+  "private": true,
+  "description": "Portable, secret-free Pi configuration with pinned extensions and Claude/GPT-only model routing.",
+  "scripts": {
+    "verify": "python3 scripts/scan-secrets.py . && python3 scripts/check-config.py && python3 scripts/policy-matrix-test.py && bash scripts/smoke-test-setup.sh"
+  },
   "devDependencies": {
     "@oxlint/plugins": "1.79.0",
     "oxlint": "1.79.0"
