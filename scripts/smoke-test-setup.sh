@@ -191,7 +191,7 @@ assert settings["packages"] == packages
 assert settings["extensions"] == []
 assert "lsp" not in settings
 models = json.loads((root / "models.json").read_text())["providers"]
-assert set(models) == {"anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"}
+assert set(models) == {"anthropic", "openai-codex", "grok-cli"}
 assert models["anthropic"]["models"] == [{"id": "claude-opus-5"}]
 assert models["anthropic"]["modelOverrides"] == {"claude-opus-5": {}}
 assert models["grok-cli"]["models"] == [{"id": "grok-4.7"}]
@@ -199,7 +199,7 @@ assert models["grok-cli"]["modelOverrides"] == {"grok-4.7": {"name": "Grok 4.7"}
 agent = (root / "agents/scout.md").read_text()
 alias = (root / "agents/alias.md").read_text()
 worker = (root / "agents/worker.md").read_text()
-assert "npm:@eko24ive/pi-ask@1.2.0" in alias
+assert "npm:@eko24ive/pi-ask" in alias
 assert "model: openai-codex/gpt-5.6-sol" in worker
 assert "openai-codex/gpt-5.6-terra:high" in worker
 assert "anthropic/claude-opus-5:medium" in worker

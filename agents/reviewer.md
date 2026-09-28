@@ -1,12 +1,12 @@
 ---
 name: reviewer
 description: Advisory review in two branches - plan or PRD soundness before building, and code review after implementation. For completed work, name the lenses to run in sequence - code-review, thermo-nuclear, or ponytail. Returns material findings plus one recommendation. Architecture direction goes to architect.
-extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,grep,find,ls,bash
 model: openai-codex/gpt-6-sol
 thinking: xhigh
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:high, anthropic/claude-fable-5-1:high, grok-cli/grok-4.7:xhigh, openai-codex/gpt-6-astra:high
+allowed-models: anthropic/claude-opus-5-5:high, anthropic/claude-fable-5-1:high, grok-cli/grok-4.7:xhigh, openai-codex/gpt-6-astra:high, grok-cli/grok-4.7-build-fast:xhigh
 skills: code-review, thermo-nuclear-code-quality-review, ponytail-review
 mode: background
 context-warn-threshold: 80%

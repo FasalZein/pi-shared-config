@@ -4,8 +4,8 @@ description: External and web research into a sourced brief - technology compari
 model: anthropic/claude-opus-5-5
 thinking: low
 allow-model-override: true
-allowed-models: openai-codex/gpt-6-sol:low, grok-cli/grok-4.7:high, anthropic/claude-fable-5-1:low, cpa/claude-opus-5-5
-extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+allowed-models: openai-codex/gpt-6-sol:low, grok-cli/grok-4.7:high, anthropic/claude-fable-5-1:low, grok-cli/grok-4.7-build-fast:xhigh
+extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,grep,find,ls,bash
 skills: find-standards, context7, exa, firecrawl, tinyfish, convert-documents-to-markdown, technical-writing
 mode: background

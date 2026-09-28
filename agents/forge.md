@@ -1,14 +1,14 @@
 ---
 name: forge
 description: Best-of-N - run a high-stakes slice three times in isolated git worktrees and stage only the winner. Launch when a wrong answer is expensive; routine slices go to worker. Needs a clean git tree.
-extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,edit,grep,find,ls,bash
 inject-skills: principle-prove-it-works
 skills: tdd, principle-prove-it-works, principle-type-system-discipline
 model: openai-codex/gpt-6-sol
 thinking: high
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high
+allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
 llm-as-a-verifier: true
 llm-as-a-verifier-candidates: 3
 llm-as-a-verifier-model: anthropic/claude-opus-5-5:high

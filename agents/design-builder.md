@@ -1,14 +1,14 @@
 ---
 name: design-builder
 description: Headless UI - build a scoped piece from a brief and self-check with design-qa before reporting. Launch for background or parallel UI builds; live-steered UI work goes to design.
-extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,edit,grep,find,ls,bash
 skills: design-craft, laws-of-ux, design-qa, coss, shadcn, prototype
 inject-skills: design-craft
 model: anthropic/claude-opus-5-5
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-fable-5-1:medium, openai-codex/gpt-6-sol:high, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, openai-codex/gpt-6-astra:low, cpa/claude-opus-5-5
+allowed-models: anthropic/claude-fable-5-1:medium, openai-codex/gpt-6-sol:high, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, openai-codex/gpt-6-astra:low, grok-cli/grok-4.7-build-fast:xhigh
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%

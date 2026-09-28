@@ -125,7 +125,18 @@ expect_rejection(
     lambda root: update_json(root / "settings.json", lambda value: value.__setitem__("enabledModels", ["cursor/grok-4"])),
     "enables a model outside Claude, GPT, and grok-cli",
 )
-for provider in ("anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"):
+for personal_route in ("kiro/claude-opus-4-8-thinking", "cpa/gpt-6-sol", "gnrt/claude-opus-5"):
+    expect_rejection(
+        f"personal provider route {personal_route}",
+        lambda root, route=personal_route: update_json(root / "settings.json", lambda value: value["enabledModels"].append(route)),  # type: ignore[union-attr]
+        "enables a model outside Claude, GPT, and grok-cli",
+    )
+expect_rejection(
+    "pinned package",
+    lambda root: update_json(root / "settings.json", lambda value: value.__setitem__("packages", [f"{package}@1.0.0" for package in value["packages"]])),  # type: ignore[union-attr]
+    "packages do not match",
+)
+for provider in ("anthropic", "openai-codex", "grok-cli"):
     def remove_provider(root: Path, name: str = provider) -> None:
         update_json(root / "models.json", lambda value: value["providers"].pop(name))  # type: ignore[union-attr]
     expect_rejection(f"provider {provider}", remove_provider, "providers must be exactly")

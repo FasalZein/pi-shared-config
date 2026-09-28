@@ -1,11 +1,11 @@
 ---
 name: scout
 description: Codebase reconnaissance in two sizes - quick lookup ("where is X", "does Y exist") returns a direct answer plus paths; recon maps a feature or subsystem into a report artifact for a downstream brief. A file whose path the parent already holds is cheaper to read in place.
-extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,grep,find,ls,bash
 model: grok-cli/grok-4.7
 allow-model-override: true
-allowed-models: openai-codex/gpt-6-sol:low, anthropic/claude-opus-5-5:low, openai-codex/gpt-6-luna:xhigh, cpa/claude-opus-5-5:low
+allowed-models: openai-codex/gpt-6-sol:low, anthropic/claude-opus-5-5:low, openai-codex/gpt-6-luna:xhigh, grok-cli/grok-4.7-build-fast:xhigh
 mode: background
 context-warn-threshold: 80%
 report-context-usage: true

@@ -101,36 +101,7 @@ for file in "${ROOT_FILES[@]}"; do
   cp "$SOURCE_DIR/$file" "$REPO_DIR/$file"
 done
 
-gnrt_snapshot="$(mktemp)"
-python3 - "$REPO_DIR/models.json" "$gnrt_snapshot" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-source = Path(sys.argv[1])
-provider = None
-if source.exists():
-    provider = json.loads(source.read_text()).get("providers", {}).get("gnrt")
-Path(sys.argv[2]).write_text(json.dumps(provider))
-PY
 cp "$SOURCE_DIR/models.json" "$REPO_DIR/models.json"
-python3 - "$REPO_DIR/models.json" "$gnrt_snapshot" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-data = json.loads(path.read_text())
-providers = data.setdefault("providers", {})
-if "gnrt" not in providers:
-    saved = json.loads(Path(sys.argv[2]).read_text())
-    if not isinstance(saved, dict):
-        raise SystemExit("live models.json has no gnrt provider and the repository has none to retain")
-    providers["gnrt"] = saved
-    path.write_text(json.dumps(data, indent=2) + "\n")
-    print("Retained the repository gnrt provider because the live models.json has none.", file=sys.stderr)
-PY
-rm -f "$gnrt_snapshot"
 for directory in "${SYNC_DIRS[@]}"; do
   sync_dir "$SOURCE_DIR/$directory" "$REPO_DIR/$directory"
 done

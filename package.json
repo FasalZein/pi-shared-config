@@ -1,7 +1,7 @@
 {
   "name": "pi-shared-config",
   "private": true,
-  "description": "Portable, secret-free Pi configuration with pinned extensions and Claude, GPT, and grok-cli model routing.",
+  "description": "Portable, secret-free Pi configuration with latest-version extensions and anthropic, openai-codex, and grok-cli model routing.",
   "scripts": {
     "verify": "python3 scripts/scan-secrets.py . && python3 scripts/check-config.py && python3 scripts/policy-matrix-test.py && node --test scripts/skill-gate-test.ts && bash scripts/smoke-test-setup.sh"
   },

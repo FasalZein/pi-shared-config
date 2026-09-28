@@ -2,11 +2,11 @@
 name: github
 deny-tools: edit, grep, find, ls, image_gen
 description: Read, brief, publish, and change GitHub issues without flooding the parent - fact lookups, complete issue briefs, spec and ticket publishing from settled decisions, authorized writes with readback. Shaping and interviews go to architect.
-extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 model: openai-codex/gpt-6-sol
 thinking: low
 allow-model-override: true
-allowed-models: openai-codex/gpt-6-sol:medium, grok-cli/grok-4.7:high, anthropic/claude-opus-5-5:low
+allowed-models: openai-codex/gpt-6-sol:medium, grok-cli/grok-4.7:high, anthropic/claude-opus-5-5:low, grok-cli/grok-4.7-build-fast:xhigh
 skills: wayfinder=auto, to-spec=auto, to-tickets=auto
 mode: background
 context-warn-threshold: 80%

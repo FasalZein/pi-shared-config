@@ -1,14 +1,14 @@
 ---
 name: worker
 description: Implements one scoped code slice or fix - writes code, runs targeted tests, commits, reports what changed. Launch it with the brief inlined (Ticket/Recon/State via !`cat` placeholders). UI work goes to design or design-builder; edits the parent can make directly stay in the parent.
-extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 tools: read,write,edit,grep,find,ls,bash
 inject-skills: principle-prove-it-works
 skills: tdd, principle-prove-it-works, principle-type-system-discipline
 model: openai-codex/gpt-6-sol
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:medium, grok-cli/grok-4.7:high, cpa/claude-opus-5-5:medium
+allowed-models: anthropic/claude-opus-5-5:medium, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%

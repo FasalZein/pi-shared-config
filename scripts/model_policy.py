@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Shared provider and model-id policy for the portable Pi setup."""
 
-RETAINED_PROVIDERS = ("anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli")
+# Only providers that a retained package supplies or authenticates:
+# anthropic (pi-claude-auth), openai-codex (pi-codex-conversion), grok-cli (pi-grok-cli).
+RETAINED_PROVIDERS = ("anthropic", "openai-codex", "grok-cli")
 
 
 def model_allowed(value: str, *, provider: str | None = None) -> bool:

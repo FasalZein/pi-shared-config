@@ -1244,9 +1244,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/FasalZein/motion-studio.git",
       "skillPath": "skills/motion-critique/SKILL.md",
-      "skillFolderHash": "9cc439227864f755f925b660cf16182dd9907f48",
+      "skillFolderHash": "bb1516f2565d3c6a2303d12cebb8f8edd0090872",
       "installedAt": "2026-09-28T08:12:00.700Z",
-      "updatedAt": "2026-09-28T12:54:46.947Z"
+      "updatedAt": "2026-09-28T13:45:55.576Z"
     },
     "motion-look": {
       "source": "FasalZein/motion-studio",
@@ -1255,16 +1255,16 @@
       "skillPath": "skills/motion-look/SKILL.md",
       "skillFolderHash": "4cf313d30b6f5ba5768ba34f910f11bf8e95a532",
       "installedAt": "2026-09-28T08:12:00.701Z",
-      "updatedAt": "2026-09-28T12:54:46.949Z"
+      "updatedAt": "2026-09-28T13:45:55.577Z"
     },
     "motion-studio": {
       "source": "FasalZein/motion-studio",
       "sourceType": "github",
       "sourceUrl": "https://github.com/FasalZein/motion-studio.git",
       "skillPath": "skills/motion-studio/SKILL.md",
-      "skillFolderHash": "0262e2f7faf11c4b91fba4042f9b3858f33d4359",
+      "skillFolderHash": "24d2455a3148f8586aea37d91c8ed528483f3ad3",
       "installedAt": "2026-09-28T08:12:00.702Z",
-      "updatedAt": "2026-09-28T12:54:46.951Z"
+      "updatedAt": "2026-09-28T13:45:55.578Z"
     },
     "motion-vocabulary": {
       "source": "FasalZein/motion-studio",
@@ -1273,7 +1273,7 @@
       "skillPath": "skills/motion-vocabulary/SKILL.md",
       "skillFolderHash": "f1c78e3bf35de963c8c3ab3576ed9ed366fb6424",
       "installedAt": "2026-09-28T08:12:00.702Z",
-      "updatedAt": "2026-09-28T12:54:46.954Z"
+      "updatedAt": "2026-09-28T13:45:55.579Z"
     }
   },
   "dismissed": {

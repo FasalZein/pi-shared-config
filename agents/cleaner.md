@@ -2,11 +2,11 @@
 name: cleaner
 description: CRAP-gate a green slice - add behavior-asserting tests and simplify until every changed function is CRAP 6 or below (task-relaxable to 8). Launch after tests pass, before hardener. Suspected bugs go in the report.
 tools: exec_command,write_stdin,apply_patch,read,bash,edit,write
-extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, npm:pi-fancy-footer@3.0.2, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: npm:@howaboua/pi-codex-conversion, git:github.com/edxeth/pi-better-skills, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 model: openai-codex/gpt-6-sol
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, cpa/claude-opus-5-5
+allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
 skills: codebase-design, principle-minimize-reader-load, principle-subtract-before-you-add
 inject-skills: principle-minimize-reader-load, principle-subtract-before-you-add
 mode: interactive

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())
 PACKAGES = manifest["packages"]
-PIN_BY_NAME = {
+PACKAGE_BY_NAME = {
     "edxeth/pi-claude-auth": PACKAGES[0],
     "edxeth/pi-subagents": PACKAGES[1],
     "edxeth/pi-tasks": PACKAGES[2],
@@ -32,14 +32,14 @@ def canonical_extension(value: str) -> str | None:
         return value
     if value.startswith("git:github.com/"):
         name = value.removeprefix("git:github.com/").split("@", 1)[0]
-        return PIN_BY_NAME.get(name)
+        return PACKAGE_BY_NAME.get(name)
     if value.startswith("npm:"):
         name = value.removeprefix("npm:")
-        if name.startswith("@"):
-            name = name.rsplit("@", 1)[0]
-        else:
-            name = name.split("@", 1)[0]
-        return PIN_BY_NAME.get(name)
+        # Drop a version suffix; a leading @ belongs to the npm scope.
+        scope, _, rest = name.partition("/") if name.startswith("@") else ("", "", name)
+        rest = rest.split("@", 1)[0]
+        name = f"{scope}/{rest}" if scope else rest
+        return PACKAGE_BY_NAME.get(name)
     return None
 
 
@@ -97,7 +97,10 @@ def normalize_tools_line(line: str) -> str:
 
 
 def canonical_agent_model(value: str) -> str:
+    """Move a GPT route from any provider (for example a local proxy) to openai-codex."""
     route, separator, thinking = value.partition(":")
+    if "/" not in route:
+        return value
     provider, model_id = route.rsplit("/", 1)
     if model_id.startswith("gpt-"):
         provider = "openai-codex"
@@ -107,16 +110,17 @@ def canonical_agent_model(value: str) -> str:
 
 def normalize_allowed_models_line(line: str) -> str:
     values = [value.strip() for value in line.split(":", 1)[1].split(",")]
+    canonical = [canonical_agent_model(value) for value in values]
     return "allowed-models: " + ", ".join(
-        canonical_agent_model(value) for value in values if model_allowed(value)
+        value for value in dict.fromkeys(canonical) if model_allowed(value)
     )
 
 
 def normalize_model_line(path: Path, line: str) -> str:
     key, value = line.split(":", 1)
-    value = value.strip()
+    value = canonical_agent_model(value.strip())
     if model_allowed(value):
-        return f"{key}: {canonical_agent_model(value)}"
+        return f"{key}: {value}"
     raise SystemExit(f"no Claude, GPT, or grok-cli replacement specified for {path}: {line}")
 
 

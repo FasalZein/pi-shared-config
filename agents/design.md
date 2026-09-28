@@ -1,14 +1,14 @@
 ---
 name: design
 description: UI in a visible pane, two gears - direct (critique, design direction) or build (implement, restyle, polish). Launch when the user should watch or steer the work.
-extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, npm:pi-fancy-footer@3.0.2, git:github.com/edxeth/pi-subagents@cf6dbf41c17986f3882e6804a68e8fb8282d25e6, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
+extensions: git:github.com/edxeth/pi-better-skills, npm:pi-fancy-footer, git:github.com/edxeth/pi-subagents, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, npm:@eko24ive/pi-ask
 tools: read,write,edit,grep,find,ls,bash,ask_user
 skills: design-craft, laws-of-ux, design-md, make-interfaces-feel-better, design-qa, agent-browser, better-ui, better-typography, better-colors, better-accessibility, better-layout, coss, shadcn, prototype
 inject-skills: design-craft
 model: anthropic/claude-opus-5-5
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-fable-5-1:medium, openai-codex/gpt-6-sol:xhigh, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, cpa/claude-opus-5-5
+allowed-models: anthropic/claude-fable-5-1:medium, openai-codex/gpt-6-sol:xhigh, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
 mode: interactive
 auto-exit: false
 trust-project: true
