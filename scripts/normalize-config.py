@@ -5,6 +5,8 @@
 import json
 from pathlib import Path
 
+from model_policy import RETAINED_PROVIDERS, model_allowed
+
 ROOT = Path(__file__).resolve().parent.parent
 
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())
@@ -22,15 +24,6 @@ PIN_BY_NAME = {
     "pi-grok-cli": PACKAGES[8],
 }
 REMOVED_TOOLS = {"lsp", "ast_grep_search", "fold"}
-
-
-def model_allowed(value: str, *, provider: str | None = None) -> bool:
-    route = value.split(":", 1)[0]
-    route_provider, _, model_id = route.rpartition("/")
-    provider_name = route_provider or provider
-    if model_id.startswith(("claude-", "gpt-")):
-        return True
-    return provider_name == "grok-cli"
 
 
 def canonical_extension(value: str) -> str | None:
@@ -88,8 +81,7 @@ def normalize_models() -> None:
     path = ROOT / "models.json"
     data = json.loads(path.read_text())
     providers = data.get("providers", {})
-    names = ("anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli")
-    kept = {name: normalize_provider(name, providers[name]) for name in names}
+    kept = {name: normalize_provider(name, providers[name]) for name in RETAINED_PROVIDERS}
     path.write_text(json.dumps({"providers": kept}, indent=2) + "\n")
 
 

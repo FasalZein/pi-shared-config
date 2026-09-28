@@ -28,13 +28,13 @@ The package list contains only these items:
 - `git:github.com/edxeth/pi-ralph-loop@108823f8d1e2089fec1f7202ca3a8905d12df574`;
 - `npm:pi-grok-cli@0.9.2`.
 
-The repository also keeps two local extensions: `pi-tps.ts` and `skill-gate.ts`. `skill-gate.ts` limits the ambient skill catalog to a fixed visible set. The `eko24ive-pi-ask.json` file configures `pi-ask`; it is not an extension.
+The repository also keeps two local extensions: `pi-tps.ts` and `skill-gate.ts`. `skill-gate.ts` limits the ambient skill catalog to a fixed visible set. A named child with `--no-skills`, `-ns`, or `--skill` keeps its explicit skill list. A continuation request still receives that same visible catalog. `scripts/skill-gate-test.ts` checks this behavior. The extension file stays a copy of the live file, so this README records the test path. The `eko24ive-pi-ask.json` file configures `pi-ask`; it is not an extension.
 
-`pi-grok-cli` supplies the `grok-cli` provider. Routes on that provider stay enabled. Routes on other providers stay enabled only when the model id starts with `claude-` or `gpt-`.
+`pi-grok-cli` supplies the `grok-cli` provider. A route remains enabled only when its provider is one of the six retained providers. A `grok-cli` model id must be nonempty and start with `grok-`. A model id on another retained provider must start with `claude-` or `gpt-`.
 
 ## Models and credentials
 
-Enabled routes are Claude models, GPT models, and `grok-cli` models. The retained providers are `anthropic`, `openai-codex`, `kiro`, `cpa`, `gnrt`, and `grok-cli`. Subagents route all GPT work through `openai-codex`. Other providers, including `zai`, `opencode-go`, `9router`, `cursor`, and `cloudflare-workers-ai`, are removed.
+Enabled routes use a retained provider. The retained providers are `anthropic`, `openai-codex`, `kiro`, `cpa`, `gnrt`, and `grok-cli`. `grok-cli` routes use a nonempty model id that starts with `grok-`. Other retained routes use a model id that starts with `claude-` or `gpt-`. Subagents route all GPT work through `openai-codex`. Other providers, including `explabs`, `zai`, `opencode-go`, `9router`, `cursor`, and `cloudflare-workers-ai`, are removed.
 
 Use the normal Pi login flow for Anthropic and OpenAI Codex. Start the local Kiro and CPA proxy services before using their models. Configure GNRT through its supported login or environment setup. This repository does not store credentials.
 
@@ -92,4 +92,4 @@ Run:
 npm run verify
 ```
 
-Verification runs the secret scan, checks package and model policy, checks agent routes and skills, and runs setup in an isolated home directory. The smoke test disables package, skill, and dependency network work.
+Verification runs the secret scan, checks package and model policy, checks agent routes and skills, runs `scripts/skill-gate-test.ts`, and runs setup in an isolated home directory. The smoke test disables package, skill, and dependency network work.

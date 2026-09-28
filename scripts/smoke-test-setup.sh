@@ -136,12 +136,13 @@ grep -q "Error: npx is required to restore managed skills" "$NO_NPX_HOME/output"
 NORMALIZE_ROOT="$TEST_HOME/normalize"
 mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents"
 cp "$REPO_DIR/scripts/normalize-config.py" "$NORMALIZE_ROOT/scripts/normalize-config.py"
+cp "$REPO_DIR/scripts/model_policy.py" "$NORMALIZE_ROOT/scripts/model_policy.py"
 cp "$REPO_DIR/extension-manifest.json" "$NORMALIZE_ROOT/extension-manifest.json"
 cat > "$NORMALIZE_ROOT/settings.json" <<'JSON'
-{"enabledModels":["anthropic/claude-opus-5","grok-cli/grok-4.7","cursor/grok-code-fast-1"],"packages":["rejected"],"extensions":["rejected"],"lsp":{}}
+{"enabledModels":["anthropic/claude-opus-5","grok-cli/grok-4.7","explabs/claude-opus-5.5","grok-cli/claude-x","grok-cli/","cursor/grok-code-fast-1"],"packages":["rejected"],"extensions":["rejected"],"lsp":{}}
 JSON
 cat > "$NORMALIZE_ROOT/models.json" <<'JSON'
-{"providers":{"anthropic":{"models":[{"id":"claude-opus-5"},{"id":"grok-4"}],"modelOverrides":{"claude-opus-5":{},"grok-4":{}}},"openai-codex":{"models":[{"id":"gpt-6-astra"}]},"kiro":{"models":[{"id":"claude-opus-4-8-thinking"}]},"cpa":{"models":[{"id":"gpt-5.6-sol"}]},"gnrt":{"models":[{"id":"claude-opus-5"}]},"grok-cli":{"modelOverrides":{"grok-4.7":{"name":"Grok 4.7"}}},"rejected":{"models":[{"id":"grok-4"}]}}}
+{"providers":{"anthropic":{"models":[{"id":"claude-opus-5"},{"id":"grok-4"}],"modelOverrides":{"claude-opus-5":{},"grok-4":{}}},"openai-codex":{"models":[{"id":"gpt-6-astra"}]},"kiro":{"models":[{"id":"claude-opus-4-8-thinking"}]},"cpa":{"models":[{"id":"gpt-5.6-sol"}]},"gnrt":{"models":[{"id":"claude-opus-5"}]},"grok-cli":{"models":[{"id":"grok-4.7"},{"id":"claude-x"},{"id":""}],"modelOverrides":{"grok-4.7":{"name":"Grok 4.7"},"claude-x":{"name":"bad"},"":{"name":"empty"}}},"rejected":{"models":[{"id":"grok-4"}]}}}
 JSON
 cat > "$NORMALIZE_ROOT/agents/worker.md" <<'EOF_AGENT'
 ---
@@ -159,7 +160,7 @@ cat > "$NORMALIZE_ROOT/agents/scout.md" <<'EOF_AGENT'
 ---
 model: grok-cli/grok-4.7
 llm-as-a-verifier-model: anthropic/claude-opus-5
-allowed-models: anthropic/claude-opus-5, grok-cli/grok-4.7:high, cursor/grok-code-fast-1
+allowed-models: anthropic/claude-opus-5, grok-cli/grok-4.7:high, explabs/claude-opus-5.5, grok-cli/claude-x, grok-cli/, cursor/grok-code-fast-1
 extensions: ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@old, git:github.com/edxeth/pi-subagents@old, git:github.com/edxeth/pi-tasks@old, npm:@howaboua/pi-codex-conversion@old, git:github.com/edxeth/pi-better-skills@old, npm:@eko24ive/pi-ask@old, npm:eko24ive/pi-ask@old, npm:pi-fancy-footer@old, git:github.com/edxeth/pi-ralph-loop@old, npm:pi-grok-cli@old, npm:rejected@1
  tools: unchanged
 tools: read,lsp,ast_grep_search,fold,bash
@@ -185,6 +186,7 @@ root = Path(sys.argv[1])
 packages = json.loads(Path(sys.argv[2]).read_text())["packages"]
 settings = json.loads((root / "settings.json").read_text())
 assert settings["enabledModels"] == ["anthropic/claude-opus-5", "grok-cli/grok-4.7"]
+assert "explabs/" not in settings["enabledModels"]
 assert settings["packages"] == packages
 assert settings["extensions"] == []
 assert "lsp" not in settings
@@ -192,6 +194,7 @@ models = json.loads((root / "models.json").read_text())["providers"]
 assert set(models) == {"anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"}
 assert models["anthropic"]["models"] == [{"id": "claude-opus-5"}]
 assert models["anthropic"]["modelOverrides"] == {"claude-opus-5": {}}
+assert models["grok-cli"]["models"] == [{"id": "grok-4.7"}]
 assert models["grok-cli"]["modelOverrides"] == {"grok-4.7": {"name": "Grok 4.7"}}
 agent = (root / "agents/scout.md").read_text()
 alias = (root / "agents/alias.md").read_text()
@@ -202,7 +205,9 @@ assert "openai-codex/gpt-5.6-terra:high" in worker
 assert "anthropic/claude-opus-5:medium" in worker
 assert "cpa/gpt-" not in worker
 assert "model: grok-cli/grok-4.7" in agent
-assert "grok-cli/grok-4.7:high" in agent
+assert "allowed-models: anthropic/claude-opus-5, grok-cli/grok-4.7:high\n" in agent
+assert "explabs/claude-opus-5.5" not in agent
+assert "grok-cli/claude-x" not in agent
 assert "thinking:" not in agent
 assert "cursor/grok" not in agent
 assert "tools: read,bash" in agent
@@ -227,6 +232,19 @@ if python3 "$NORMALIZE_ROOT/scripts/normalize-config.py" >"$NORMALIZE_ROOT/error
   exit 1
 fi
 grep -q "no Claude, GPT, or grok-cli replacement specified" "$NORMALIZE_ROOT/error"
+
+for rejected_model in "explabs/claude-opus-5.5" "grok-cli/claude-x" "grok-cli/"; do
+  cat > "$NORMALIZE_ROOT/agents/worker.md" <<EOF_AGENT
+---
+model: ${rejected_model}
+---
+EOF_AGENT
+  if python3 "$NORMALIZE_ROOT/scripts/normalize-config.py" >"$NORMALIZE_ROOT/error" 2>&1; then
+    echo "normalizer unexpectedly accepted ${rejected_model}" >&2
+    exit 1
+  fi
+  grep -q "no Claude, GPT, or grok-cli replacement specified" "$NORMALIZE_ROOT/error"
+done
 
 SYNC_REPO="$TEST_HOME/sync-repo"
 SYNC_HOME="$TEST_HOME/live-home"
@@ -288,13 +306,14 @@ from pathlib import Path
 settings_path, models_path, scout_path = map(Path, sys.argv[1:])
 settings = json.loads(settings_path.read_text())
 settings["liveSyncMarker"] = True
-settings["enabledModels"].extend(["grok-cli/grok-4.7", "cursor/grok-4"])
+settings["enabledModels"].extend(["grok-cli/grok-4.7", "cursor/grok-4", "explabs/claude-opus-5.5", "grok-cli/claude-x", "grok-cli/"])
 settings["packages"] = ["npm:rejected@1"]
 settings["extensions"] = ["/tmp/rejected.ts"]
 settings_path.write_text(json.dumps(settings, indent=2) + "\n")
 models = json.loads(models_path.read_text())
 models["providers"]["anthropic"]["models"].extend([{"id": "claude-live-sync"}, {"id": "grok-4"}])
 models["providers"]["grok-cli"]["modelOverrides"]["grok-live-sync"] = {"name": "Live Grok"}
+models["providers"]["grok-cli"]["modelOverrides"]["claude-x"] = {"name": "bad"}
 models["providers"]["rejected"] = {"models": [{"id": "grok-4"}]}
 models_path.write_text(json.dumps(models, indent=2) + "\n")
 scout = scout_path.read_text()
@@ -359,8 +378,20 @@ models, settings, scout = map(Path, sys.argv[1:])
 provider_names = set(json.loads(models.read_text())["providers"])
 if "rejected" in provider_names or "grok-cli" not in provider_names:
     raise SystemExit(f"live sync kept the wrong providers: {sorted(provider_names)}")
-if "cursor/grok-4" in settings.read_text() or "cursor/grok-4" in scout.read_text():
-    raise SystemExit("live sync kept a rejected cursor grok route")
+settings_text = settings.read_text()
+scout_text = scout.read_text()
+models_value = json.loads(models.read_text())
+enabled = json.loads(settings_text)["enabledModels"]
+rejected_routes = {"cursor/grok-4", "explabs/claude-opus-5.5", "grok-cli/claude-x", "grok-cli/"}
+kept_rejected = [model for model in enabled if model in rejected_routes or str(model).startswith("explabs/")]
+scout_rejected = [
+    route for route in ("cursor/grok-4", "explabs/", "grok-cli/claude-x") if route in scout_text
+]
+if kept_rejected or scout_rejected:
+    raise SystemExit(f"live sync kept a rejected route: {kept_rejected or scout_rejected}")
+overrides = models_value["providers"]["grok-cli"].get("modelOverrides", {})
+if "claude-x" in overrides or "" in overrides:
+    raise SystemExit(f"live sync kept a malformed grok-cli override: {sorted(overrides)}")
 PY
 grep -q '"liveSyncMarker": true' "$SYNC_REPO/settings.json"
 test ! -e "$SYNC_REPO/skills/remove-me"

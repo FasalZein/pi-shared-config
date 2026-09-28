@@ -26,7 +26,6 @@
     "anthropic/claude-opus-5-5",
     "anthropic/claude-fable-5-1",
     "openai-codex/gpt-6-astra",
-    "explabs/claude-opus-5.5",
     "cpa/claude-fable-5-1",
     "cpa/claude-opus-5-5"
   ],

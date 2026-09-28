@@ -6,6 +6,8 @@ import json
 import re
 from pathlib import Path
 
+from model_policy import RETAINED_PROVIDERS, agent_model_allowed, model_allowed
+
 ROOT = Path(__file__).resolve().parent.parent
 EXPECTED_PACKAGES = [
     "git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62",
@@ -22,7 +24,7 @@ ALLOWED_AGENT_EXTENSIONS = set(EXPECTED_PACKAGES) | {
     "~/.pi/agent/extensions/pi-tps.ts",
     "~/.pi/agent/extensions/skill-gate.ts",
 }
-EXPECTED_PROVIDERS = {"anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"}
+EXPECTED_PROVIDERS = set(RETAINED_PROVIDERS)
 FORBIDDEN_TOOLS = {"lsp", "ast_grep_search", "fold"}
 MATT_POCOCK_SKILLS = {
     "ask-matt", "code-review", "codebase-design", "diagnosing-bugs", "domain-modeling",
@@ -37,25 +39,6 @@ RESEARCH_SKILLS = {
 }
 EXPECTED_UNLOCKED_AGENT_SKILLS = {"design-md", "find-standards", "ponytail-review"}
 errors: list[str] = []
-
-
-def model_allowed(value: str, *, provider: str | None = None) -> bool:
-    route = value.split(":", 1)[0]
-    route_provider, _, model_id = route.rpartition("/")
-    provider_name = route_provider or provider
-    if model_id.startswith(("claude-", "gpt-")):
-        return True
-    return provider_name == "grok-cli"
-
-
-def agent_model_allowed(value: str) -> bool:
-    route = value.split(":", 1)[0]
-    provider, model_id = route.rsplit("/", 1)
-    if model_id.startswith("gpt-"):
-        return provider == "openai-codex"
-    if provider == "grok-cli":
-        return True
-    return model_id.startswith("claude-")
 
 
 def fail(message: str) -> None:
