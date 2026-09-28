@@ -63,6 +63,16 @@ def expect_rejection(name: str, mutate: Callable[[Path], None], message: str) ->
             raise AssertionError(f"{name}: expected {message!r}, got {output!r}")
 
 
+def expect_acceptance(name: str, mutate: Callable[[Path], None]) -> None:
+    with tempfile.TemporaryDirectory(prefix="policy-matrix-") as temporary:
+        root = Path(temporary) / "repo"
+        copy_repository(root)
+        mutate(root)
+        result = checker(root)
+        if result.returncode != 0:
+            raise AssertionError(f"{name}: checker rejected valid configuration: {result.stdout}{result.stderr}")
+
+
 def update_json(path: Path, change: Callable[[dict[str, object]], None]) -> None:
     value = read_json(path)
     change(value)
@@ -113,9 +123,13 @@ expect_rejection(
 expect_rejection(
     "enabled model",
     lambda root: update_json(root / "settings.json", lambda value: value.__setitem__("enabledModels", ["cursor/grok-4"])),
-    "enables a non-Claude/GPT model",
+    "enables a model outside Claude, GPT, and grok-cli",
 )
-for provider in ("anthropic", "openai-codex", "kiro", "cpa", "gnrt"):
+expect_acceptance(
+    "grok-cli enabled model",
+    lambda root: update_json(root / "settings.json", lambda value: value.__setitem__("enabledModels", ["grok-cli/grok-4.7"])),
+)
+for provider in ("anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"):
     def remove_provider(root: Path, name: str = provider) -> None:
         update_json(root / "models.json", lambda value: value["providers"].pop(name))  # type: ignore[union-attr]
     expect_rejection(f"provider {provider}", remove_provider, "providers must be exactly")
@@ -131,7 +145,20 @@ def reject_provider_model(root: Path) -> None:
     update_json(root / "models.json", change)
 
 
-expect_rejection("provider model", reject_provider_model, "has a non-Claude/GPT model")
+expect_rejection("provider model", reject_provider_model, "has a model outside Claude, GPT, and grok-cli")
+
+
+def accept_grok_cli_provider_model(root: Path) -> None:
+    def change(value: dict[str, object]) -> None:
+        providers = value["providers"]
+        assert isinstance(providers, dict)
+        provider = providers["grok-cli"]
+        assert isinstance(provider, dict)
+        provider["models"] = [{"id": "grok-4.7"}]
+    update_json(root / "models.json", change)
+
+
+expect_acceptance("grok-cli provider model", accept_grok_cli_provider_model)
 
 
 def reject_override(root: Path) -> None:
@@ -144,14 +171,22 @@ def reject_override(root: Path) -> None:
     update_json(root / "models.json", change)
 
 
-expect_rejection("provider override", reject_override, "has a non-Claude/GPT override")
+expect_rejection("provider override", reject_override, "has an override outside Claude, GPT, and grok-cli")
 expect_rejection("retired linear agent", lambda root: (root / "agents/linear.md").write_text("---\nmodel: anthropic/claude-opus-5\n---\n"), "linear.md must not exist")
 expect_rejection("invalid frontmatter", lambda root: (root / "agents/worker.md").write_text("---\nmodel: openai-codex/gpt-5.6-sol\n"), "invalid frontmatter")
-expect_rejection("agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-5.6-sol", "\nmodel: cursor/grok-4"), "non-Claude/GPT model")
-expect_rejection("CPA agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-5.6-sol", "\nmodel: cpa/gpt-5.6-sol"), "non-Claude/GPT model")
-expect_rejection("verifier model", lambda root: replace(root / "agents/forge.md", "\nllm-as-a-verifier-model: anthropic/claude-opus-5:high", "\nllm-as-a-verifier-model: cursor/grok-4"), "non-Claude/GPT llm-as-a-verifier-model")
-expect_rejection("allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cursor/grok-4,"), "allows a non-Claude/GPT model")
-expect_rejection("CPA allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cpa/gpt-5.6-sol,"), "allows a non-Claude/GPT model")
+expect_rejection("agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cursor/grok-4"), "has a model outside Claude, GPT, and grok-cli")
+expect_rejection("CPA agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cpa/gpt-5.6-sol"), "has a model outside Claude, GPT, and grok-cli")
+expect_acceptance(
+    "grok-cli agent route",
+    lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: grok-cli/grok-4.7"),
+)
+expect_acceptance(
+    "grok-cli allowed model",
+    lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: grok-cli/grok-4.7:high,"),
+)
+expect_rejection("verifier model", lambda root: replace(root / "agents/forge.md", "\nllm-as-a-verifier-model: anthropic/claude-opus-5-5:high", "\nllm-as-a-verifier-model: cursor/grok-4"), "has a llm-as-a-verifier-model outside Claude, GPT, and grok-cli")
+expect_rejection("allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cursor/grok-4,"), "allows a model outside Claude, GPT, and grok-cli")
+expect_rejection("CPA allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cpa/gpt-5.6-sol,"), "allows a model outside Claude, GPT, and grok-cli")
 expect_rejection("agent extension", lambda root: replace(root / "agents/worker.md", "\nextensions:", "\nextensions: /tmp/rejected.ts,"), "uses a rejected extension")
 for tool in ("lsp", "ast_grep_search", "fold"):
     expect_rejection(

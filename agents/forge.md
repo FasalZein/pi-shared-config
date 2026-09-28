@@ -1,17 +1,17 @@
 ---
 name: forge
 description: Best-of-N - run a high-stakes slice three times in isolated git worktrees and stage only the winner. Launch when a wrong answer is expensive; routine slices go to worker. Needs a clean git tree.
-extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.8.2
+extensions: git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
 tools: read,write,edit,grep,find,ls,bash
-inject-skills: implement, principle-prove-it-works
-skills: implement, tdd, principle-prove-it-works, principle-type-system-discipline
-model: openai-codex/gpt-5.6-sol
+inject-skills: principle-prove-it-works
+skills: tdd, principle-prove-it-works, principle-type-system-discipline
+model: openai-codex/gpt-6-sol
 thinking: high
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5:medium, openai-codex/gpt-5.6-terra:high
+allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high
 llm-as-a-verifier: true
 llm-as-a-verifier-candidates: 3
-llm-as-a-verifier-model: anthropic/claude-opus-5:high
+llm-as-a-verifier-model: anthropic/claude-opus-5-5:high
 llm-as-a-verifier-criteria: code-change
 mode: background
 timeout: 3600
@@ -51,7 +51,7 @@ Your launch task may contain embedded context sections (Ticket, Recon, State) ex
 
 ### 1. Read the task
 
-Follow the injected `implement` skill as your operating procedure: implement the work from the ticket/brief, use `/tdd` at pre-agreed seams, typecheck and run single test files regularly, then commit. Two overrides to the skill: skip its `/code-review` step (a separate reviewer stage owns review), and skip its run-the-full-suite step unless the brief explicitly asks — `hardener` owns the full-suite receipt as its own stage. Report which checks you ran so it can.
+Implement the work from the ticket or brief. Use the `tdd` loop at the seams the ticket agrees. Run the typecheck and single test files as you go, then commit. Review belongs to a separate reviewer stage. Run the full suite only when the brief asks; `hardener` owns the full-suite receipt. Report which checks you ran.
 
 **When you stop.** The repair-attempt limit in your inherited rules is the ceiling. On hitting it, leave the work uncommitted — or committed behind an explicit caveat — and report what failed, your diagnosis, and what you tried. A clean BLOCKED report beats a loop.
 
@@ -59,9 +59,7 @@ Follow the injected `implement` skill as your operating procedure: implement the
 
 Keep the change surgical and let existing patterns carry the shape.
 
-Before changing a shared symbol, search for every reference. Account for every caller as changed or deliberately unchanged.
-
-Treat automatic LSP diagnostics as early feedback. Run the relevant typecheck or lint command when one exists.
+Before changing a shared symbol, find every caller with `rg -n -w <symbol>`. Account for every caller as changed or deliberately unchanged.
 
 When the slice introduces or changes types or public signatures, read `~/.pi/agent/skills/principle-type-system-discipline/SKILL.md` before coding. Type design is complete when invalid states cannot be constructed and every caller typechecks.
 
@@ -72,7 +70,7 @@ Run the relevant checks, scoped to your slice:
 - typecheck/lint if relevant
 - when no test exists, the exact command you ran and its output, pasted into your report
 
-**Hang-proof every command.** Run test and build commands without watch mode. Use a timeout derived from their normal runtime and below this agent's whole-run `timeout`.
+Give test and build commands a timeout derived from their normal runtime and below this agent's whole-run `timeout`.
 
 ### 4. Report
 

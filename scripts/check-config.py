@@ -9,17 +9,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EXPECTED_PACKAGES = [
     "git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62",
-    "git:github.com/edxeth/pi-subagents@37c375bf13e3ac0e034856a54a56e62e4ecc6f8a",
-    "git:github.com/edxeth/pi-tasks@d4b07692427199d3db4f9f5e6441d9c82ee612d4",
-    "npm:@howaboua/pi-codex-conversion@3.0.34",
-    "git:github.com/edxeth/pi-better-skills@2deaf5c4b5e93ccd3c1b464c6a2dc3f24cd46205",
+    "git:github.com/edxeth/pi-subagents@cf6dbf41c17986f3882e6804a68e8fb8282d25e6",
+    "git:github.com/edxeth/pi-tasks@37143ee47610610db5b6cb86d94a7ffbb8ecf54d",
+    "npm:@howaboua/pi-codex-conversion@3.0.39",
+    "git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5",
     "npm:@eko24ive/pi-ask@1.2.0",
-    "npm:pi-fancy-footer@3.0.1",
+    "npm:pi-fancy-footer@3.0.2",
     "git:github.com/edxeth/pi-ralph-loop@108823f8d1e2089fec1f7202ca3a8905d12df574",
-    "npm:pi-grok-cli@0.8.2",
+    "npm:pi-grok-cli@0.9.2",
 ]
-ALLOWED_AGENT_EXTENSIONS = set(EXPECTED_PACKAGES) | {"~/.pi/agent/extensions/pi-tps.ts"}
-EXPECTED_PROVIDERS = {"anthropic", "openai-codex", "kiro", "cpa", "gnrt"}
+ALLOWED_AGENT_EXTENSIONS = set(EXPECTED_PACKAGES) | {
+    "~/.pi/agent/extensions/pi-tps.ts",
+    "~/.pi/agent/extensions/skill-gate.ts",
+}
+EXPECTED_PROVIDERS = {"anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"}
 FORBIDDEN_TOOLS = {"lsp", "ast_grep_search", "fold"}
 MATT_POCOCK_SKILLS = {
     "ask-matt", "code-review", "codebase-design", "diagnosing-bugs", "domain-modeling",
@@ -36,9 +39,13 @@ EXPECTED_UNLOCKED_AGENT_SKILLS = {"design-md", "find-standards", "ponytail-revie
 errors: list[str] = []
 
 
-def model_allowed(value: str) -> bool:
-    model_id = value.split(":", 1)[0].rsplit("/", 1)[-1]
-    return model_id.startswith(("claude-", "gpt-"))
+def model_allowed(value: str, *, provider: str | None = None) -> bool:
+    route = value.split(":", 1)[0]
+    route_provider, _, model_id = route.rpartition("/")
+    provider_name = route_provider or provider
+    if model_id.startswith(("claude-", "gpt-")):
+        return True
+    return provider_name == "grok-cli"
 
 
 def agent_model_allowed(value: str) -> bool:
@@ -46,6 +53,8 @@ def agent_model_allowed(value: str) -> bool:
     provider, model_id = route.rsplit("/", 1)
     if model_id.startswith("gpt-"):
         return provider == "openai-codex"
+    if provider == "grok-cli":
+        return True
     return model_id.startswith("claude-")
 
 
@@ -57,10 +66,10 @@ settings = json.loads((ROOT / "settings.json").read_text())
 if settings.get("packages") != EXPECTED_PACKAGES:
     fail("settings.json packages do not match the exact retained package list")
 if settings.get("extensions") != []:
-    fail("settings.json extensions must be empty; pi-tps uses extension auto-discovery")
+    fail("settings.json extensions must be empty; pi-tps and skill-gate use extension auto-discovery")
 for model in settings.get("enabledModels", []):
     if not model_allowed(model):
-        fail(f"settings.json enables a non-Claude/GPT model: {model}")
+        fail(f"settings.json enables a model outside Claude, GPT, and grok-cli: {model}")
 
 models = json.loads((ROOT / "models.json").read_text())
 providers = models.get("providers", {})
@@ -68,11 +77,11 @@ if set(providers) != EXPECTED_PROVIDERS:
     fail(f"models.json providers must be exactly {sorted(EXPECTED_PROVIDERS)}")
 for provider_name, provider in providers.items():
     for model in provider.get("models", []):
-        if not model_allowed(model["id"]):
-            fail(f"models.json has a non-Claude/GPT model: {provider_name}/{model['id']}")
+        if not model_allowed(model["id"], provider=provider_name):
+            fail(f"models.json has a model outside Claude, GPT, and grok-cli: {provider_name}/{model['id']}")
     for model_id in provider.get("modelOverrides", {}):
-        if not model_allowed(model_id):
-            fail(f"models.json has a non-Claude/GPT override: {provider_name}/{model_id}")
+        if not model_allowed(model_id, provider=provider_name):
+            fail(f"models.json has an override outside Claude, GPT, and grok-cli: {provider_name}/{model_id}")
 
 agent_dir = ROOT / "agents"
 if (agent_dir / "linear.md").exists():
@@ -87,12 +96,12 @@ for path in sorted(agent_dir.glob("*.md")):
     for key in ("model", "llm-as-a-verifier-model"):
         match = re.search(rf"^{key}:\s*(.+)$", frontmatter, re.MULTILINE)
         if match and not agent_model_allowed(match.group(1).strip()):
-            fail(f"{path.relative_to(ROOT)} has a non-Claude/GPT {key}: {match.group(1)}")
+            fail(f"{path.relative_to(ROOT)} has a {key} outside Claude, GPT, and grok-cli: {match.group(1)}")
     match = re.search(r"^allowed-models:\s*(.*)$", frontmatter, re.MULTILINE)
     if match:
         for model in match.group(1).split(","):
             if model.strip() and not agent_model_allowed(model.strip()):
-                fail(f"{path.relative_to(ROOT)} allows a non-Claude/GPT model: {model.strip()}")
+                fail(f"{path.relative_to(ROOT)} allows a model outside Claude, GPT, and grok-cli: {model.strip()}")
     match = re.search(r"^extensions:\s*(.*)$", frontmatter, re.MULTILINE)
     if match:
         for extension in match.group(1).split(","):
@@ -153,7 +162,7 @@ if unlocked_agent_skills != EXPECTED_UNLOCKED_AGENT_SKILLS:
     fail(f"unexpected unlocked agent skills: {sorted(unlocked_agent_skills)}")
 
 extension_entries = {path.name for path in (ROOT / "extensions").iterdir()}
-if extension_entries != {"pi-tps.ts", "eko24ive-pi-ask.json"}:
+if extension_entries != {"pi-tps.ts", "skill-gate.ts", "eko24ive-pi-ask.json"}:
     fail(f"extensions directory has unexpected entries: {sorted(extension_entries)}")
 
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())

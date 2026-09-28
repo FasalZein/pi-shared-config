@@ -10,31 +10,31 @@ Install Git, Node.js, `npx`, Python 3, and Pi. Then run one command:
 curl -fsSL https://raw.githubusercontent.com/FasalZein/pi-shared-config/main/install.sh | bash
 ```
 
-The installer copies the configuration to `~/.pi/agent`. It reconciles the nine pinned packages when Pi is available. It also copies `extensions/pi-tps.ts` for automatic local discovery.
+The installer copies the configuration to `~/.pi/agent`. It reconciles the nine pinned packages when Pi is available. It also copies `extensions/pi-tps.ts` and `extensions/skill-gate.ts` for automatic local discovery.
 
-Setup moves an existing `extensions` directory to a timestamped backup. It then installs the two retained files into a new directory.
+Setup moves an existing `extensions` directory to a timestamped backup. It then installs the three retained files into a new directory.
 
 ## Retained extensions
 
 The package list contains only these items:
 
-- `pi-claude-auth`;
-- `pi-subagents`;
-- `pi-tasks`;
-- `pi-codex-conversion`;
-- `pi-better-skills`;
-- `pi-ask`;
-- `pi-fancy-footer`;
-- `pi-ralph-loop`;
-- `pi-grok-cli`.
+- `git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62`;
+- `git:github.com/edxeth/pi-subagents@cf6dbf41c17986f3882e6804a68e8fb8282d25e6`;
+- `git:github.com/edxeth/pi-tasks@37143ee47610610db5b6cb86d94a7ffbb8ecf54d`;
+- `npm:@howaboua/pi-codex-conversion@3.0.39`;
+- `git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5`;
+- `npm:@eko24ive/pi-ask@1.2.0`;
+- `npm:pi-fancy-footer@3.0.2`;
+- `git:github.com/edxeth/pi-ralph-loop@108823f8d1e2089fec1f7202ca3a8905d12df574`;
+- `npm:pi-grok-cli@0.9.2`.
 
-The repository also keeps local `pi-tps.ts`. The `eko24ive-pi-ask.json` file configures `pi-ask`; it is not an extension.
+The repository also keeps two local extensions: `pi-tps.ts` and `skill-gate.ts`. `skill-gate.ts` limits the ambient skill catalog to a fixed visible set. The `eko24ive-pi-ask.json` file configures `pi-ask`; it is not an extension.
 
-`pi-grok-cli` remains installed for explicit command use. Grok models are not present in `models.json`, enabled models, or agent routes.
+`pi-grok-cli` supplies the `grok-cli` provider. Routes on that provider stay enabled. Routes on other providers stay enabled only when the model id starts with `claude-` or `gpt-`.
 
 ## Models and credentials
 
-Only model identifiers that start with `claude-` or `gpt-` are enabled. The retained providers are `anthropic`, `openai-codex`, `kiro`, `cpa`, and `gnrt`. Subagents route all GPT work through `openai-codex`.
+Enabled routes are Claude models, GPT models, and `grok-cli` models. The retained providers are `anthropic`, `openai-codex`, `kiro`, `cpa`, `gnrt`, and `grok-cli`. Subagents route all GPT work through `openai-codex`. Other providers, including `zai`, `opencode-go`, `9router`, `cursor`, and `cloudflare-workers-ai`, are removed.
 
 Use the normal Pi login flow for Anthropic and OpenAI Codex. Start the local Kiro and CPA proxy services before using their models. Configure GNRT through its supported login or environment setup. This repository does not store credentials.
 
@@ -80,7 +80,7 @@ Run:
 ./scripts/sync-from-live.sh
 ```
 
-The sync reads the active local setup. It refreshes the six live agent definitions, model data, selected local extension files, skill lock, and skill links. It then reapplies the exact package and Claude/GPT model policy. It never changes installed live files.
+The sync reads the active local setup. It refreshes the eleven live agent definitions, model data, `pi-tps.ts`, `skill-gate.ts`, the skill lock, and skill links. It then reapplies the exact package pins and the Claude, GPT, and `grok-cli` model policy. It never changes installed live files.
 
 The sync excludes the retired `to-prd` and `to-slices` links. It keeps the repository versions of policy documents and the `bro`, `cmux`, and `msw` skills.
 

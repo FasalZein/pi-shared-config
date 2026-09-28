@@ -24,14 +24,18 @@ PIN_BY_NAME = {
 REMOVED_TOOLS = {"lsp", "ast_grep_search", "fold"}
 
 
-def model_allowed(value: str) -> bool:
-    model_id = value.split(":", 1)[0].rsplit("/", 1)[-1]
-    return model_id.startswith(("claude-", "gpt-"))
+def model_allowed(value: str, *, provider: str | None = None) -> bool:
+    route = value.split(":", 1)[0]
+    route_provider, _, model_id = route.rpartition("/")
+    provider_name = route_provider or provider
+    if model_id.startswith(("claude-", "gpt-")):
+        return True
+    return provider_name == "grok-cli"
 
 
 def canonical_extension(value: str) -> str | None:
     value = value.strip()
-    if value == "~/.pi/agent/extensions/pi-tps.ts":
+    if value in {"~/.pi/agent/extensions/pi-tps.ts", "~/.pi/agent/extensions/skill-gate.ts"}:
         return value
     if value.startswith("git:github.com/"):
         name = value.removeprefix("git:github.com/").split("@", 1)[0]
@@ -56,23 +60,27 @@ def normalize_settings() -> None:
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
-def allowed_models(models: list[dict[str, object]]) -> list[dict[str, object]]:
-    return [model for model in models if model_allowed(str(model["id"]))]
+def allowed_models(provider: str, models: list[dict[str, object]]) -> list[dict[str, object]]:
+    return [model for model in models if model_allowed(str(model["id"]), provider=provider)]
 
 
-def allowed_model_overrides(overrides: dict[str, object]) -> dict[str, object]:
-    return {model_id: value for model_id, value in overrides.items() if model_allowed(model_id)}
+def allowed_model_overrides(provider: str, overrides: dict[str, object]) -> dict[str, object]:
+    return {
+        model_id: value
+        for model_id, value in overrides.items()
+        if model_allowed(model_id, provider=provider)
+    }
 
 
-def normalize_provider(provider: dict[str, object]) -> dict[str, object]:
+def normalize_provider(name: str, provider: dict[str, object]) -> dict[str, object]:
     if "models" in provider:
         models = provider["models"]
         assert isinstance(models, list)
-        provider["models"] = allowed_models(models)
+        provider["models"] = allowed_models(name, models)
     if "modelOverrides" in provider:
         overrides = provider["modelOverrides"]
         assert isinstance(overrides, dict)
-        provider["modelOverrides"] = allowed_model_overrides(overrides)
+        provider["modelOverrides"] = allowed_model_overrides(name, overrides)
     return provider
 
 
@@ -80,8 +88,8 @@ def normalize_models() -> None:
     path = ROOT / "models.json"
     data = json.loads(path.read_text())
     providers = data.get("providers", {})
-    names = ("anthropic", "openai-codex", "kiro", "cpa", "gnrt")
-    kept = {name: normalize_provider(providers[name]) for name in names}
+    names = ("anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli")
+    kept = {name: normalize_provider(name, providers[name]) for name in names}
     path.write_text(json.dumps({"providers": kept}, indent=2) + "\n")
 
 
@@ -117,9 +125,7 @@ def normalize_model_line(path: Path, line: str) -> str:
     value = value.strip()
     if model_allowed(value):
         return f"{key}: {canonical_agent_model(value)}"
-    if path.name == "scout.md" and key == "model":
-        return "model: openai-codex/gpt-5.6-sol"
-    raise SystemExit(f"no Claude/GPT replacement specified for {path}: {line}")
+    raise SystemExit(f"no Claude, GPT, or grok-cli replacement specified for {path}: {line}")
 
 
 def normalize_frontmatter_line(path: Path, line: str) -> str:
@@ -134,20 +140,6 @@ def normalize_frontmatter_line(path: Path, line: str) -> str:
     return line
 
 
-def normalize_scout_frontmatter(lines: list[str]) -> list[str]:
-    model_index = 0
-    has_thinking = False
-    for index, line in enumerate(lines):
-        if line.startswith("thinking:"):
-            lines[index] = "thinking: low"
-            has_thinking = True
-        if line.startswith("model:"):
-            model_index = index
-    if not has_thinking:
-        lines.insert(model_index + 1, "thinking: low")
-    return lines
-
-
 def replace_removed_tool_instructions(text: str) -> str:
     replacements = [
         ("After every TypeScript edit, read the post-edit `lsp` diagnostics and fix type errors before moving on; use `lsp` `find_references` before renaming a component or prop.", "After every TypeScript edit, run the project typecheck and fix errors before moving on. Search all callers before renaming a component or prop."),
@@ -156,6 +148,11 @@ def replace_removed_tool_instructions(text: str) -> str:
         ("- ticket or spec context the review depends on is absent from your brief (you have no Linear access; it arrives as a ticket-brief artifact path)", "- ticket or spec context the review depends on is absent from your brief"),
         ("- Prefer static inspection first. Confirm structural smells (Duplicated Code, Repeated Switches, Shotgun Surgery) with `ast_grep_search` when text grep is ambiguous — a pattern match across files is evidence, a hunch is not.", "- Prefer static inspection first. Confirm structural smells with targeted searches across files. A repeated match is evidence; a hunch is not."),
         ("2. Use `lsp` (`goto_definition`, `find_references`, `diagnostics`) to check a symbol's callers and types before rating a finding; fall back to text search only when the server cannot answer.", "2. Use targeted text search and the project typecheck to check a symbol's callers and types before rating a finding."),
+        ("- For symbol definitions and references, use `ast_grep_search` for structural matches and `rg -n -w` for names.", "- For symbol definitions and references, use targeted text search for structural matches and `rg -n -w` for names."),
+        ("- Use `ast_grep_search` only for syntax shapes text search cannot express reliably (calls regardless of formatting, structural patterns, API-migration shapes). Lexical first, AST second.", "- Use targeted text search for symbol definitions and references. Read the best matches before searching again."),
+        ("use `ast_grep_search` to enumerate matching shapes", "use targeted text search to enumerate matching shapes"),
+        ("find every caller with `ast_grep_search` or `rg -n -w`", "find every caller with `rg -n -w`"),
+        ("2. Check a symbol's definition and callers (`ast_grep_search` or `rg -n -w`) and its types (the project's type checker) before rating a finding.", "2. Check a symbol's definition and callers (`rg -n -w`) and its types (the project's type checker) before rating a finding."),
     ]
     for old, new in replacements:
         text = text.replace(old, new)
@@ -167,8 +164,6 @@ def normalize_agent(path: Path) -> None:
     if len(parts) != 3:
         raise SystemExit(f"missing frontmatter: {path}")
     frontmatter = [normalize_frontmatter_line(path, line) for line in parts[1].splitlines()]
-    if path.name == "scout.md":
-        frontmatter = normalize_scout_frontmatter(frontmatter)
     parts[1] = "\n".join(frontmatter) + "\n"
     path.write_text(replace_removed_tool_instructions("---".join(parts)))
 

@@ -1,13 +1,13 @@
 ---
 name: researcher
 description: External and web research into a sourced brief - technology comparisons, landscape surveys, multi-source answers. Say "focused" for a single-angle answer or "multi-angle" for one pass per sub-question. Codebase questions go to scout.
-model: anthropic/claude-opus-5
+model: anthropic/claude-opus-5-5
 thinking: low
 allow-model-override: true
-allowed-models: openai-codex/gpt-5.6-sol:low, anthropic/claude-fable-5-1:low
-extensions: git:github.com/edxeth/pi-better-skills@2deaf5c4b5e93ccd3c1b464c6a2dc3f24cd46205, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.8.2
+allowed-models: openai-codex/gpt-6-sol:low, grok-cli/grok-4.7:high, anthropic/claude-fable-5-1:low, cpa/claude-opus-5-5
+extensions: git:github.com/edxeth/pi-better-skills@447a0ca98e3131d50106736816d22fbca617a1f5, git:github.com/edxeth/pi-claude-auth@d99968e317b1132efdac7f1722380922af27af62, npm:pi-grok-cli@0.9.2
 tools: read,write,grep,find,ls,bash
-skills: find-standards, why, context7, exa, firecrawl, tinyfish, convert-documents-to-markdown, technical-writing
+skills: find-standards, context7, exa, firecrawl, tinyfish, convert-documents-to-markdown, technical-writing
 mode: background
 auto-exit: true
 timeout: 1800
@@ -61,7 +61,7 @@ When the task names an office document, spreadsheet, presentation, ebook, or PDF
 
 For a pattern choice, read `~/.pi/agent/skills/find-standards/SKILL.md` before searching. Run its internal and external passes in this session. Return an adopt / adapt / ruled-out verdict for each candidate.
 
-For historical intent, load `why`. Run the evidence passes supported by this session. Record unsupported evidence categories as gaps.
+For historical intent (why code has its shape), use the evidence this session can reach: `git log`, `git blame`, linked PRs and issues through `gh`, ADRs, and docs. Record unreachable evidence categories as gaps.
 
 After the research stop condition is met, read `~/.pi/agent/skills/technical-writing/SKILL.md`. Apply it while drafting the brief.
 

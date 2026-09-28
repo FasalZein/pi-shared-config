@@ -20,7 +20,7 @@ ROOT_FILES=(
   oxlint.config.ts
 )
 SYNC_DIRS=(templates themes oxlint)
-LIVE_AGENTS=(design-builder design researcher reviewer scout worker)
+LIVE_AGENTS=(architect cleaner design-builder design forge github hardener researcher reviewer scout worker)
 EXCLUDES=(
   '.DS_Store'
   'auth.json'
@@ -76,6 +76,10 @@ command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 is required" >&2; exit 1; }
 
 for file in "${ROOT_FILES[@]}"; do
+  if [[ "$file" == "REALTIME-SYSTEM-PROMPT.md" && ! -e "$SOURCE_DIR/$file" ]]; then
+    echo "Live source has no REALTIME-SYSTEM-PROMPT.md; keeping the repository copy." >&2
+    continue
+  fi
   require_path "$SOURCE_DIR/$file"
 done
 for directory in "${SYNC_DIRS[@]}"; do
@@ -91,12 +95,42 @@ done
 echo "Syncing Pi configuration from $SOURCE_DIR"
 
 for file in "${ROOT_FILES[@]}"; do
-  if [[ "$file" != "models.json" ]]; then
-    cp "$SOURCE_DIR/$file" "$REPO_DIR/$file"
+  if [[ "$file" == "models.json" || ! -e "$SOURCE_DIR/$file" ]]; then
+    continue
   fi
+  cp "$SOURCE_DIR/$file" "$REPO_DIR/$file"
 done
 
+gnrt_snapshot="$(mktemp)"
+python3 - "$REPO_DIR/models.json" "$gnrt_snapshot" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1])
+provider = None
+if source.exists():
+    provider = json.loads(source.read_text()).get("providers", {}).get("gnrt")
+Path(sys.argv[2]).write_text(json.dumps(provider))
+PY
 cp "$SOURCE_DIR/models.json" "$REPO_DIR/models.json"
+python3 - "$REPO_DIR/models.json" "$gnrt_snapshot" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text())
+providers = data.setdefault("providers", {})
+if "gnrt" not in providers:
+    saved = json.loads(Path(sys.argv[2]).read_text())
+    if not isinstance(saved, dict):
+        raise SystemExit("live models.json has no gnrt provider and the repository has none to retain")
+    providers["gnrt"] = saved
+    path.write_text(json.dumps(data, indent=2) + "\n")
+    print("Retained the repository gnrt provider because the live models.json has none.", file=sys.stderr)
+PY
+rm -f "$gnrt_snapshot"
 for directory in "${SYNC_DIRS[@]}"; do
   sync_dir "$SOURCE_DIR/$directory" "$REPO_DIR/$directory"
 done
@@ -132,11 +166,13 @@ PY
 rsync -a --delete "$skill_stage/" "$REPO_DIR/skills/"
 
 require_path "$SOURCE_DIR/extensions/pi-tps.ts"
+require_path "$SOURCE_DIR/extensions/skill-gate.ts"
 require_path "$SOURCE_DIR/extensions/eko24ive-pi-ask.json"
 mkdir -p "$REPO_DIR/extensions"
 find "$REPO_DIR/extensions" -mindepth 1 -maxdepth 1 \
-  ! -name 'pi-tps.ts' ! -name 'eko24ive-pi-ask.json' -exec rm -rf {} +
+  ! -name 'pi-tps.ts' ! -name 'skill-gate.ts' ! -name 'eko24ive-pi-ask.json' -exec rm -rf {} +
 cp "$SOURCE_DIR/extensions/pi-tps.ts" "$REPO_DIR/extensions/pi-tps.ts"
+cp "$SOURCE_DIR/extensions/skill-gate.ts" "$REPO_DIR/extensions/skill-gate.ts"
 cp "$SOURCE_DIR/extensions/eko24ive-pi-ask.json" "$REPO_DIR/extensions/eko24ive-pi-ask.json"
 
 python3 "$SCRIPT_DIR/normalize-config.py"

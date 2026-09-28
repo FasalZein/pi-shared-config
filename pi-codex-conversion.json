@@ -2,7 +2,8 @@
   "mode": "normal",
   "voiceFeaturesOnly": false,
   "prompt": {
-    "heavySystemPromptOverwrite": false
+    "heavySystemPromptOverwrite": false,
+    "currentTimeReminderMinutes": 0
   },
   "scope": {
     "allProviders": "off",
@@ -19,12 +20,12 @@
     "viewImageOnly": false,
     "webRunOnly": false,
     "imageGenerationOnly": false,
-    "autoReasoning": false
+    "autoReasoning": true
   },
   "ui": {
     "statusLine": true,
     "toolRenaming": true,
-    "compactTools": false,
+    "compactTools": "off",
     "codeModeDetails": false,
     "backgroundShellWidget": true,
     "backgroundShellToggleShortcut": "alt+w",
@@ -69,6 +70,7 @@
   },
   "executionMode": "notebook",
   "notebook": {
-    "maxHeapMiB": 4096
+    "maxHeapMiB": 4096,
+    "plainCommandOutput": false
   }
 }

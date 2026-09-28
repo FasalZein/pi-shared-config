@@ -34,6 +34,7 @@ idea
 | Agent | Use it for |
 |---|---|
 | `architect` | Shape a large or unclear idea into a repository specification and GitHub issues. |
+| `github` | Read and change GitHub issues, and publish settled specifications and tickets. |
 | `scout` | Find code and explain current behavior. |
 | `worker` | Build one defined code change. |
 | `forge` | Build a high-risk change through several isolated attempts. |

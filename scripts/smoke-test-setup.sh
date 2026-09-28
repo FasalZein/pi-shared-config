@@ -55,8 +55,9 @@ if actual.get("retry") != {"enabled": False}:
 PY
 
 test -f "$TARGET/extensions/pi-tps.ts"
+test -f "$TARGET/extensions/skill-gate.ts"
 test -f "$TARGET/extensions/eko24ive-pi-ask.json"
-test "$(find "$TARGET/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "2"
+test "$(find "$TARGET/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "3"
 BACKUP="$(find "$TARGET" -maxdepth 1 -type d -name 'extensions.backup-*' -print -quit)"
 test -n "$BACKUP"
 cmp <(printf 'old extension\n') "$BACKUP/old.ts"
@@ -137,10 +138,10 @@ mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents"
 cp "$REPO_DIR/scripts/normalize-config.py" "$NORMALIZE_ROOT/scripts/normalize-config.py"
 cp "$REPO_DIR/extension-manifest.json" "$NORMALIZE_ROOT/extension-manifest.json"
 cat > "$NORMALIZE_ROOT/settings.json" <<'JSON'
-{"enabledModels":["anthropic/claude-opus-5","cursor/grok-code-fast-1"],"packages":["rejected"],"extensions":["rejected"],"lsp":{}}
+{"enabledModels":["anthropic/claude-opus-5","grok-cli/grok-4.7","cursor/grok-code-fast-1"],"packages":["rejected"],"extensions":["rejected"],"lsp":{}}
 JSON
 cat > "$NORMALIZE_ROOT/models.json" <<'JSON'
-{"providers":{"anthropic":{"models":[{"id":"claude-opus-5"},{"id":"grok-4"}],"modelOverrides":{"claude-opus-5":{},"grok-4":{}}},"openai-codex":{"models":[{"id":"gpt-6-astra"}]},"kiro":{"models":[{"id":"claude-opus-4-8-thinking"}]},"cpa":{"models":[{"id":"gpt-5.6-sol"}]},"gnrt":{"models":[{"id":"claude-opus-5"}]},"rejected":{"models":[{"id":"grok-4"}]}}}
+{"providers":{"anthropic":{"models":[{"id":"claude-opus-5"},{"id":"grok-4"}],"modelOverrides":{"claude-opus-5":{},"grok-4":{}}},"openai-codex":{"models":[{"id":"gpt-6-astra"}]},"kiro":{"models":[{"id":"claude-opus-4-8-thinking"}]},"cpa":{"models":[{"id":"gpt-5.6-sol"}]},"gnrt":{"models":[{"id":"claude-opus-5"}]},"grok-cli":{"modelOverrides":{"grok-4.7":{"name":"Grok 4.7"}}},"rejected":{"models":[{"id":"grok-4"}]}}}
 JSON
 cat > "$NORMALIZE_ROOT/agents/worker.md" <<'EOF_AGENT'
 ---
@@ -156,9 +157,9 @@ extensions: npm:eko24ive/pi-ask@old
 EOF_AGENT
 cat > "$NORMALIZE_ROOT/agents/scout.md" <<'EOF_AGENT'
 ---
-model: cursor/grok-code-fast-1
+model: grok-cli/grok-4.7
 llm-as-a-verifier-model: anthropic/claude-opus-5
-allowed-models: anthropic/claude-opus-5, cursor/grok-code-fast-1
+allowed-models: anthropic/claude-opus-5, grok-cli/grok-4.7:high, cursor/grok-code-fast-1
 extensions: ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@old, git:github.com/edxeth/pi-subagents@old, git:github.com/edxeth/pi-tasks@old, npm:@howaboua/pi-codex-conversion@old, git:github.com/edxeth/pi-better-skills@old, npm:@eko24ive/pi-ask@old, npm:eko24ive/pi-ask@old, npm:pi-fancy-footer@old, git:github.com/edxeth/pi-ralph-loop@old, npm:pi-grok-cli@old, npm:rejected@1
  tools: unchanged
 tools: read,lsp,ast_grep_search,fold,bash
@@ -183,14 +184,15 @@ from pathlib import Path
 root = Path(sys.argv[1])
 packages = json.loads(Path(sys.argv[2]).read_text())["packages"]
 settings = json.loads((root / "settings.json").read_text())
-assert settings["enabledModels"] == ["anthropic/claude-opus-5"]
+assert settings["enabledModels"] == ["anthropic/claude-opus-5", "grok-cli/grok-4.7"]
 assert settings["packages"] == packages
 assert settings["extensions"] == []
 assert "lsp" not in settings
 models = json.loads((root / "models.json").read_text())["providers"]
-assert set(models) == {"anthropic", "openai-codex", "kiro", "cpa", "gnrt"}
+assert set(models) == {"anthropic", "openai-codex", "kiro", "cpa", "gnrt", "grok-cli"}
 assert models["anthropic"]["models"] == [{"id": "claude-opus-5"}]
 assert models["anthropic"]["modelOverrides"] == {"claude-opus-5": {}}
+assert models["grok-cli"]["modelOverrides"] == {"grok-4.7": {"name": "Grok 4.7"}}
 agent = (root / "agents/scout.md").read_text()
 alias = (root / "agents/alias.md").read_text()
 worker = (root / "agents/worker.md").read_text()
@@ -199,8 +201,9 @@ assert "model: openai-codex/gpt-5.6-sol" in worker
 assert "openai-codex/gpt-5.6-terra:high" in worker
 assert "anthropic/claude-opus-5:medium" in worker
 assert "cpa/gpt-" not in worker
-assert "model: openai-codex/gpt-5.6-sol\nthinking: low" in agent
-assert agent.count("thinking: low") == 1
+assert "model: grok-cli/grok-4.7" in agent
+assert "grok-cli/grok-4.7:high" in agent
+assert "thinking:" not in agent
 assert "cursor/grok" not in agent
 assert "tools: read,bash" in agent
 assert "npm:rejected" not in agent
@@ -220,10 +223,10 @@ model: cursor/grok-code-fast-1
 ---
 EOF_AGENT
 if python3 "$NORMALIZE_ROOT/scripts/normalize-config.py" >"$NORMALIZE_ROOT/error" 2>&1; then
-  echo "normalizer unexpectedly accepted a non-Claude/GPT worker model" >&2
+  echo "normalizer unexpectedly accepted a model outside Claude, GPT, and grok-cli" >&2
   exit 1
 fi
-grep -q "no Claude/GPT replacement specified" "$NORMALIZE_ROOT/error"
+grep -q "no Claude, GPT, or grok-cli replacement specified" "$NORMALIZE_ROOT/error"
 
 SYNC_REPO="$TEST_HOME/sync-repo"
 SYNC_HOME="$TEST_HOME/live-home"
@@ -239,7 +242,7 @@ done
 for directory in templates themes oxlint; do
   cp -R "$SYNC_REPO/$directory" "$LIVE_AGENT/$directory"
 done
-for agent in design-builder design researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
   cp "$SYNC_REPO/agents/$agent.md" "$LIVE_AGENT/agents/$agent.md"
 done
 for skill in bro msw cmux; do
@@ -259,6 +262,7 @@ os.symlink("/tmp/retired-prd", target / "to-prd")
 os.symlink("/tmp/retired-slices", target / "to-slices")
 PY
 printf '// live pi-tps marker\n' > "$LIVE_AGENT/extensions/pi-tps.ts"
+printf '// live skill-gate marker\n' > "$LIVE_AGENT/extensions/skill-gate.ts"
 printf '{"liveSyncMarker":true}\n' > "$LIVE_AGENT/extensions/eko24ive-pi-ask.json"
 cp "$SYNC_REPO/skills/.skill-lock.json" "$SYNC_HOME/.agents/.skill-lock.json"
 for file in keybindings.json fancy-footer.json pi-codex-conversion.json proxies.json trust.json; do
@@ -270,7 +274,7 @@ printf 'live script\n' > "$LIVE_AGENT/scripts/live-script"
 for directory in templates themes oxlint; do
   printf 'live %s\n' "$directory" > "$LIVE_AGENT/$directory/live-sync-marker"
 done
-for agent in design-builder design researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
   printf '\nLive agent marker: %s.\n' "$agent" >> "$LIVE_AGENT/agents/$agent.md"
 done
 for skill in bro msw cmux; do
@@ -284,16 +288,21 @@ from pathlib import Path
 settings_path, models_path, scout_path = map(Path, sys.argv[1:])
 settings = json.loads(settings_path.read_text())
 settings["liveSyncMarker"] = True
-settings["enabledModels"].append("cursor/grok-4")
+settings["enabledModels"].extend(["grok-cli/grok-4.7", "cursor/grok-4"])
 settings["packages"] = ["npm:rejected@1"]
 settings["extensions"] = ["/tmp/rejected.ts"]
 settings_path.write_text(json.dumps(settings, indent=2) + "\n")
 models = json.loads(models_path.read_text())
 models["providers"]["anthropic"]["models"].extend([{"id": "claude-live-sync"}, {"id": "grok-4"}])
+models["providers"]["grok-cli"]["modelOverrides"]["grok-live-sync"] = {"name": "Live Grok"}
 models["providers"]["rejected"] = {"models": [{"id": "grok-4"}]}
 models_path.write_text(json.dumps(models, indent=2) + "\n")
 scout = scout_path.read_text()
-scout_path.write_text(scout.replace("model: openai-codex/gpt-5.6-sol", "model: cursor/grok-4", 1))
+if "model: grok-cli/grok-4.7" not in scout or "\nallowed-models:" not in scout:
+    raise SystemExit("live scout fixture lost its grok-cli route before sync")
+scout_path.write_text(
+    scout.replace("\nallowed-models:", "\nallowed-models: cursor/grok-4, grok-cli/grok-4.7:high,", 1)
+)
 PY
 printf 'remove me\n' > "$SYNC_REPO/skills/remove-me"
 printf 'remove me\n' > "$SYNC_REPO/extensions/remove-me"
@@ -327,19 +336,36 @@ for directory in templates themes oxlint; do
   cmp "$LIVE_AGENT/$directory/live-sync-marker" "$SYNC_REPO/$directory/live-sync-marker"
 done
 cmp "$LIVE_AGENT/scripts/live-script" "$SYNC_REPO/agent-scripts/live-script"
-for agent in design-builder design researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
   grep -q "Live agent marker: $agent" "$SYNC_REPO/agents/$agent.md"
 done
 for skill in bro msw cmux; do
   cmp "$LIVE_AGENT/skills/$skill/live-sync-marker" "$SYNC_REPO/skills/$skill/live-sync-marker"
 done
 cmp "$LIVE_AGENT/extensions/pi-tps.ts" "$SYNC_REPO/extensions/pi-tps.ts"
+cmp "$LIVE_AGENT/extensions/skill-gate.ts" "$SYNC_REPO/extensions/skill-gate.ts"
 cmp "$LIVE_AGENT/extensions/eko24ive-pi-ask.json" "$SYNC_REPO/extensions/eko24ive-pi-ask.json"
 grep -q 'claude-live-sync' "$SYNC_REPO/models.json"
+grep -q 'grok-live-sync' "$SYNC_REPO/models.json"
+grep -q 'grok-cli/grok-4.7' "$SYNC_REPO/settings.json"
+grep -q 'model: grok-cli/grok-4.7' "$SYNC_REPO/agents/scout.md"
+grep -q 'grok-cli/grok-4.7:high' "$SYNC_REPO/agents/scout.md"
+python3 - "$SYNC_REPO/models.json" "$SYNC_REPO/settings.json" "$SYNC_REPO/agents/scout.md" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+models, settings, scout = map(Path, sys.argv[1:])
+provider_names = set(json.loads(models.read_text())["providers"])
+if "rejected" in provider_names or "grok-cli" not in provider_names:
+    raise SystemExit(f"live sync kept the wrong providers: {sorted(provider_names)}")
+if "cursor/grok-4" in settings.read_text() or "cursor/grok-4" in scout.read_text():
+    raise SystemExit("live sync kept a rejected cursor grok route")
+PY
 grep -q '"liveSyncMarker": true' "$SYNC_REPO/settings.json"
 test ! -e "$SYNC_REPO/skills/remove-me"
 test ! -e "$SYNC_REPO/extensions/remove-me"
-test "$(find "$SYNC_REPO/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "2"
+test "$(find "$SYNC_REPO/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "3"
 python3 "$SYNC_REPO/scripts/check-config.py" >/dev/null
 python3 - "$SYNC_REPO/skills/managed-metadata.json" "$SYNC_REPO/skills/symlinks.json" <<'PY'
 import json
