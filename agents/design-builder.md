@@ -1,7 +1,7 @@
 ---
 name: design-builder
 description: Headless UI - build a scoped piece from a brief through the design-craft phases and verify it with rendered screenshots before reporting. Launch for background or parallel UI builds; live-steered UI work goes to design. Brief: ~/.pi/agent/templates/design-brief-template.md.
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 tools: read,write,edit,grep,find,ls,bash,codemode
 skills: design-craft, design-qa=auto, laws-of-ux=auto, state-machine=auto, variant=auto, break=auto, review-animations=auto, design-taste-frontend, design-md, coss, coss-particles, shadcn, agent-browser, prototype, better-ui, better-typography, better-colors, better-accessibility, better-layout, better-writing, better-interface, make-interfaces-feel-better, emil-design-eng, animate, apple-design, animation-vocabulary, find-animation-opportunities, improve-animations, mobile-native, break-ui, ask-sonner, copywriting
 inject-skills: design-craft

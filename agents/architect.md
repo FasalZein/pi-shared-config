@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Grill a fuzzy idea into a repository specification file and authorized GitHub delivery tickets in its own pane. Launch when shaping would flood the parent (a whole specification) or the parent is mid-thread; small ideas grill in the main chat.
-extensions: git:github.com/edxeth/pi-subagents, git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: git:github.com/edxeth/pi-subagents, git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 tools: all
 skills: grill-with-docs, grilling, domain-modeling, codebase-design, to-spec, to-tickets, variant, review-animations, pick-ui-library, interface-review, pencil-design, build-design-library, explain-interface, prototype, wayfinder, grill-me, ask-matt, to-questionnaire, handoff
 inject-skills: grilling, domain-modeling
@@ -78,7 +78,7 @@ Delegate to gather input *for the specification*, not to produce it. You still o
 - Do not implement product code. You may edit documentation, specifications, and other non-code artifacts when the task explicitly authorizes those writes. Never edit archive records.
 - Publish only when every OPEN item is answered or explicitly deferred.
 - Each ticket must state one bounded behavior, verifiable acceptance checks, and its blocking edges.
-- If you create a worktree for the specification, commit there. Do not push or merge unless the task says so. If you merge, run `worktrees-landed <repo> --remove` right after the merge. If you do not merge, report the worktree path, branch, commit and state on the BRANCH line, so the merging agent can clean up.
+- If you create a worktree for the specification, commit there. Do not push or merge unless the task says so. If you merge, merge with `wt land <branch> <repo>`. If you do not merge, report the worktree path, branch, commit and state on the BRANCH line, so the merging agent can clean up.
 - Keep file paths out of tickets unless an approved prototype snippet makes a decision clearer than prose. The canonical specification path is a reference, not an implementation detail: every ticket links to it.
 
 ## Final hand-off

@@ -1,0 +1,183 @@
+#!/bin/bash
+# wt: create, land and retire worktrees for the one-worktree-per-issue flow.
+#
+# The integration branch is the branch the repo's main checkout has checked
+# out (first entry of git worktree list). Every subcommand refuses to run when
+# the main checkout is detached.
+#
+# Usage:
+#   wt new <branch> [repo]       sweep landed and idle worktrees, then create
+#                                <main-parent>/<repo-name>-wt/<branch, / -> ->
+#                                from the integration branch tip and run
+#                                git config wt.setup there. Last stdout line:
+#                                the worktree path. Refuses when a worktree for
+#                                the same leading issue number exists (prints
+#                                its path).
+#   wt land <branch> [repo]      under a per-repo lock: merge the integration
+#                                branch into the slice, run git config
+#                                wt.landCheck in the slice, merge the slice into
+#                                the integration branch with --no-ff, then stop
+#                                the slice's devenv services, remove the
+#                                worktree and delete the branch locally and on
+#                                origin.
+#   wt retire <next-branch> [repo]
+#                                after the integration PR merged: start
+#                                <next-branch> from origin/HEAD in the main
+#                                checkout and delete the old integration branch
+#                                locally and on origin.
+#   wt --help                    print this usage.
+# Repo hooks (optional, git config in the repo):
+#   wt.setup      shell command run in a new worktree; non-zero fails wt new
+#                 and keeps the worktree for inspection
+#   wt.landCheck  shell command run in the slice worktree on the merged tree;
+#                 non-zero stops wt land before the integration branch changes
+set -u
+here=$(dirname "$0")
+# shellcheck source=lib/worktree-procs.sh
+. "$here/lib/worktree-procs.sh"
+
+usage() { sed -n '2,/^set -u/{/^set -u/d;s/^# \{0,1\}//;p;}' "$0"; }
+die() { echo "wt: $*" >&2; exit 1; }
+
+case "${1:-}" in
+  -h|--help|help) usage; exit 0;;
+  new|land|retire) cmd=$1;;
+  *) usage >&2; exit 2;;
+esac
+[ $# -ge 2 ] && [ $# -le 3 ] || { usage >&2; exit 2; }
+arg=$2; repo=${3:-.}
+
+common=$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || die "not a git repo: $repo"
+main=$(git -C "$repo" worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
+integ=$(git -C "$main" worktree list --porcelain | awk '/^branch /{print substr($0,19); exit} /^(detached|bare)?$/{exit}')
+[ -n "$integ" ] || die "the main checkout $main is detached; check out the integration branch first"
+cd "$main" || die "cannot enter $main"
+
+dirty() { [ -n "$(git -C "$1" status --porcelain 2>/dev/null)" ]; }
+# worktree_of <branch>: path of the worktree that has <branch> checked out.
+worktree_of() { git worktree list --porcelain | awk -v b="refs/heads/$1" '/^worktree /{w=substr($0,10)} $0=="branch " b {print w; exit}'; }
+# issue_of <branch>: leading issue number after an optional type prefix
+# (feat/123-x -> 123, 123-x -> 123); empty when the name has none.
+issue_of() { printf '%s\n' "$1" | sed -nE 's|^([A-Za-z]+/)?([0-9]+).*|\2|p'; }
+# delete_remote <branch>: delete origin/<branch> when origin has it.
+delete_remote() {
+  git remote get-url origin >/dev/null 2>&1 || return 0
+  if git ls-remote --exit-code --heads origin "refs/heads/$1" >/dev/null 2>&1; then
+    git push -q origin --delete "$1" && echo "deleted origin/$1"
+  fi
+}
+
+wt_new() {
+  local br=$1 issue path setup other
+  git check-ref-format --branch "$br" >/dev/null 2>&1 || die "invalid branch name: $br"
+  # Sweep first; its report goes to stderr so stdout ends with the path.
+  { "$here/worktrees-landed" "$main" --remove; "$here/worktrees-idle" "$main" --stop; } >&2
+  issue=$(issue_of "$br")
+  if [ -n "$issue" ]; then
+    while IFS=$'\t' read -r path other; do
+      if [ "$(issue_of "$other")" = "$issue" ]; then
+        echo "wt: a worktree for issue $issue exists (branch $other):" >&2
+        echo "$path"; exit 1
+      fi
+    done < <(git worktree list --porcelain | awk '/^worktree /{w=substr($0,10)} /^branch /{print w"\t"substr($0,19)}' | tail -n +2)
+  fi
+  path="$(dirname "$main")/$(basename "$main")-wt/${br//\//-}"
+  [ -e "$path" ] && die "path exists: $path"
+  git worktree add -q -b "$br" "$path" "$integ" >&2 || die "git worktree add failed"
+  setup=$(git config --get wt.setup)
+  if [ -n "$setup" ]; then
+    (cd "$path" && bash -c "$setup") </dev/null >&2 || die "wt.setup failed (exit $?); kept $path for inspection"
+  fi
+  echo "$path"
+}
+
+lock=$common/wt-land.lock
+release_lock() {
+  [ "$(cat "$lock/pid" 2>/dev/null)" = "$$" ] || return 0
+  rm -f "$lock/pid" "$lock/branch"; rmdir "$lock" 2>/dev/null
+}
+take_lock() {
+  local holder
+  if ! mkdir "$lock" 2>/dev/null; then
+    holder=$(cat "$lock/pid" 2>/dev/null)
+    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
+      die "land lock $lock is held by pid $holder (branch $(cat "$lock/branch" 2>/dev/null)); land again when it ends"
+    fi
+    echo "wt: taking over stale land lock (pid ${holder:-none} is gone)" >&2
+  fi
+  echo "$1" > "$lock/branch"
+  echo "$$" > "$lock/pid"
+  # A parallel takeover of the same stale lock: the last writer wins.
+  [ "$(cat "$lock/pid" 2>/dev/null)" = "$$" ] || die "lost the land lock race; land again"
+  trap release_lock EXIT
+}
+
+wt_land() {
+  local br=$1 slice tip check svc
+  [ "$br" != "$integ" ] || die "$br is the integration branch"
+  git show-ref -q --verify "refs/heads/$br" || die "no local branch $br"
+  slice=$(worktree_of "$br")
+  [ -n "$slice" ] || die "no worktree has $br checked out"
+  take_lock "$br"
+  dirty "$slice" && die "slice worktree $slice has uncommitted changes"
+  dirty "$main" && die "main checkout $main has uncommitted changes"
+  [ "$(git rev-list --count "$integ..$br")" -gt 0 ] || die "$br has no commits beyond $integ"
+  tip=$(git rev-parse "refs/heads/$integ")
+  if ! git -C "$slice" merge -q --no-edit "$tip" >&2; then
+    git -C "$slice" merge --abort 2>/dev/null
+    die "merging $integ into $br conflicts; rebase or resolve the slice, then land again"
+  fi
+  check=$(git config --get wt.landCheck)
+  if [ -n "$check" ]; then
+    (cd "$slice" && bash -c "$check") </dev/null || die "wt.landCheck failed (exit $?) in $slice; $integ is unchanged"
+  fi
+  # The lock serialises wt land; a commit made by hand meanwhile still moves the tip.
+  [ "$(git rev-parse "refs/heads/$integ")" = "$tip" ] || die "$integ moved during the land; land again"
+  git merge -q --no-ff --no-edit "$br" || die "merging $br into $integ failed"
+  echo "merged $br into $integ"
+  wt_snapshot
+  svc=$(wt_classify "$slice" | awk -F'\t' '$1=="services"{print $2}')
+  if [ "${svc:-0}" -gt 0 ]; then
+    [ -f "$slice/devenv.nix" ] || { echo "wt: kept $slice and $br: processes hold files under .devenv and devenv.nix is missing" >&2; return 0; }
+    (cd "$slice" && devenv processes down) </dev/null || { echo "wt: kept $slice and $br: devenv processes down failed" >&2; return 0; }
+    wt_snapshot
+    if [ "$(wt_classify "$slice" | awk -F'\t' '$1=="services"{print $2}')" != 0 ]; then
+      echo "wt: kept $slice and $br: devenv services still run; worktrees-landed --remove removes it later" >&2; return 0
+    fi
+    echo "stopped devenv services in $slice"
+  fi
+  git worktree remove "$slice" </dev/null || die "git worktree remove $slice failed"
+  echo "removed $slice"
+  git branch -q -d "$br" || die "git branch -d $br failed"
+  echo "deleted branch $br"
+  delete_remote "$br"
+}
+
+wt_retire() {
+  local next=$1 def n path br stuck=""
+  git check-ref-format --branch "$next" >/dev/null 2>&1 || die "invalid branch name: $next"
+  git show-ref -q --verify "refs/heads/$next" && die "branch $next exists"
+  dirty "$main" && die "main checkout $main has uncommitted changes"
+  n=$(gh pr list --state merged --head "$integ" --json number --jq length 2>/dev/null)
+  [ "${n:-0}" -gt 0 ] 2>/dev/null || die "no merged PR has head $integ"
+  git fetch -q origin || die "git fetch origin failed"
+  def=$(git symbolic-ref -q --short refs/remotes/origin/HEAD) || die "origin/HEAD is not set; run git remote set-head origin --auto"
+  git merge-base --is-ancestor "refs/heads/$integ" "$def" || die "$integ is not contained in $def"
+  while IFS=$'\t' read -r path br; do
+    git -C "$path" merge-base --is-ancestor HEAD "$def" 2>/dev/null || stuck="$stuck  $br $path"$'\n'
+  done < <(git worktree list --porcelain | awk '/^worktree /{w=substr($0,10)} /^branch /{print w"\t"substr($0,19)} /^detached/{print w"\t(detached)"}' | tail -n +2)
+  [ -z "$stuck" ] || die "linked worktrees hold work that is not in $def:"$'\n'"$stuck"
+  # --no-track: the next integration branch must not push to $def.
+  git switch -q --no-track -c "$next" "$def" || die "git switch -c $next failed"
+  echo "switched $main to $next (from $def)"
+  # Remote first: with origin/$integ gone, git branch -d checks against HEAD.
+  delete_remote "$integ"
+  git branch -q -d "$integ" || die "git branch -d $integ failed"
+  echo "deleted branch $integ"
+}
+
+case $cmd in
+  new) wt_new "$arg";;
+  land) wt_land "$arg";;
+  retire) wt_retire "$arg";;
+esac

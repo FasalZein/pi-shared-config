@@ -1,0 +1,32 @@
+#!/bin/bash
+# worktrees-idle: list the worktrees of a git repository (main checkout
+# included) where per-worktree devenv services run, for example a test
+# Postgres from devenv.nix with data in .devenv/state. Read-only unless --stop.
+# Usage: worktrees-idle [repo-path] [--stop]
+#   idle    = services run and no other process has its cwd or an open file
+#             inside the worktree
+#   in-use  = services run and other processes use the worktree (listed)
+# --stop runs `devenv processes down` in each idle worktree that has
+# devenv.nix. Services start again on demand with the next devenv command.
+set -u
+# shellcheck source=lib/worktree-procs.sh
+. "$(dirname "$0")/lib/worktree-procs.sh"
+repo=.; stop=0
+for a in "$@"; do case "$a" in --stop) stop=1;; *) repo=$a;; esac; done
+top=$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.git$||') || { echo "not a git repo: $repo" >&2; exit 2; }
+wt_snapshot
+printf "%-8s %-9s %s\n" STATE SERVICES PATH
+git -C "$top" worktree list --porcelain | awk '/^worktree /{print substr($0,10)}' |
+while IFS= read -r wt; do
+  procs=$(wt_classify "$wt")
+  svc=$(printf '%s\n' "$procs" | awk -F'\t' '$1=="services"{print $2}')
+  [ "${svc:-0}" -gt 0 ] || continue
+  others=$(printf '%s\n' "$procs" | awk -F'\t' '$1=="other"{print "         used by " $2 " " substr($3,1,100)}')
+  if [ -n "$others" ]; then st=in-use; else st=idle; fi
+  printf "%-8s %-9s %s\n" "$st" "$svc" "$wt"
+  [ -n "$others" ] && printf '%s\n' "$others"
+  if [ $stop -eq 1 ] && [ $st = idle ]; then
+    if [ ! -f "$wt/devenv.nix" ]; then echo "         kept: devenv.nix is missing"; continue; fi
+    (cd "$wt" && devenv processes down) </dev/null && echo "         stopped devenv services in $wt"
+  fi
+done

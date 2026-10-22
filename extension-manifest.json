@@ -4,7 +4,6 @@
     "git:github.com/edxeth/pi-claude-auth",
     "git:github.com/edxeth/pi-subagents",
     "git:github.com/edxeth/pi-tasks",
-    "npm:@howaboua/pi-codex-conversion",
     "git:github.com/edxeth/pi-better-skills",
     "npm:@eko24ive/pi-ask",
     "npm:pi-fancy-footer",
@@ -23,6 +22,34 @@
     {
       "path": "extensions/eko24ive-pi-ask.json",
       "purpose": "Configuration for @eko24ive/pi-ask"
+    },
+    {
+      "path": "extensions/env-wrap/index.ts",
+      "purpose": "Registers the bash tool wrapper that loads a worktree's direnv/devenv env; a no-op without direnv"
+    },
+    {
+      "path": "extensions/env-wrap/core.ts",
+      "purpose": "Cache and shell prefix logic for env-wrap"
+    },
+    {
+      "path": "extensions/env-wrap/shell-segments.ts",
+      "purpose": "Command parser for env-wrap, extracted from the live shell-guard.ts"
+    },
+    {
+      "path": "bin/wt",
+      "purpose": "Create, land, and retire worktrees (needs git; gh and devenv optional)"
+    },
+    {
+      "path": "bin/worktrees-landed",
+      "purpose": "Report or remove worktrees whose branch landed (needs git)"
+    },
+    {
+      "path": "bin/worktrees-idle",
+      "purpose": "Report or stop idle worktree devenv services (needs git)"
+    },
+    {
+      "path": "bin/lib/worktree-procs.sh",
+      "purpose": "Shared process helpers for the worktree tools"
     }
   ]
 }

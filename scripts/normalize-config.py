@@ -12,16 +12,13 @@ ROOT = Path(__file__).resolve().parent.parent
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())
 PACKAGES = manifest["packages"]
 PACKAGE_BY_NAME = {
-    "edxeth/pi-claude-auth": PACKAGES[0],
-    "edxeth/pi-subagents": PACKAGES[1],
-    "edxeth/pi-tasks": PACKAGES[2],
-    "@howaboua/pi-codex-conversion": PACKAGES[3],
-    "edxeth/pi-better-skills": PACKAGES[4],
-    "@eko24ive/pi-ask": PACKAGES[5],
-    "eko24ive/pi-ask": PACKAGES[5],
-    "pi-fancy-footer": PACKAGES[6],
-    "edxeth/pi-ralph-loop": PACKAGES[7],
-    "pi-grok-cli": PACKAGES[8],
+    package.removeprefix("git:github.com/").removeprefix("npm:"): package for package in PACKAGES
+}
+PACKAGE_BY_NAME["eko24ive/pi-ask"] = PACKAGE_BY_NAME["@eko24ive/pi-ask"]
+LOCAL_EXTENSIONS = {
+    "~/.pi/agent/extensions/pi-tps.ts",
+    "~/.pi/agent/extensions/skill-gate.ts",
+    "~/.pi/agent/extensions/env-wrap/index.ts",
 }
 REMOVED_TOOLS = {"lsp", "ast_grep_search", "fold"}
 # Skills that the live setup installs from a local checkout. Record the portable GitHub origin instead.
@@ -33,7 +30,7 @@ PORTABLE_SKILL_SOURCES = {
 
 def canonical_extension(value: str) -> str | None:
     value = value.strip()
-    if value in {"~/.pi/agent/extensions/pi-tps.ts", "~/.pi/agent/extensions/skill-gate.ts"}:
+    if value in LOCAL_EXTENSIONS:
         return value
     if value.startswith("git:github.com/"):
         name = value.removeprefix("git:github.com/").split("@", 1)[0]
@@ -46,6 +43,30 @@ def canonical_extension(value: str) -> str | None:
         name = f"{scope}/{rest}" if scope else rest
         return PACKAGE_BY_NAME.get(name)
     return None
+
+
+# Lines of the live AGENTS.md that describe this Mac or tools the repository does not ship.
+HOST_ONLY_AGENTS_LINES = (
+    "- Browser: `agent-browser` runs Lightpanda",
+    "- Shell on this Mac:",
+    "- `heavy` starts a job",
+    "- Size the bash tool `timeout`",
+    "- macOS tools are BSD",
+)
+
+
+def normalize_agent_scripts() -> None:
+    """The live verifier provisioning script still names the retired forge role."""
+    path = ROOT / "agent-scripts" / "provision-llm-verifier-venv.sh"
+    text = path.read_text().replace("if a forge launch reports", "if an llm-as-a-verifier launch reports")
+    path.write_text(text)
+
+
+def normalize_agents_md() -> None:
+    path = ROOT / "AGENTS.md"
+    lines = path.read_text().splitlines(keepends=True)
+    kept = [line for line in lines if not line.startswith(HOST_ONLY_AGENTS_LINES)]
+    path.write_text(remove_host_details("".join(kept)))
 
 
 def normalize_settings() -> None:
@@ -221,6 +242,8 @@ def normalize_agents() -> None:
 
 
 normalize_settings()
+normalize_agents_md()
+normalize_agent_scripts()
 normalize_skill_lock()
 normalize_models()
 normalize_agents()

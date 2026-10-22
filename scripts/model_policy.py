@@ -2,7 +2,8 @@
 """Shared provider and model-id policy for the portable Pi setup."""
 
 # Only providers that a retained package supplies or authenticates:
-# anthropic (pi-claude-auth), openai-codex (pi-codex-conversion), grok-cli (pi-grok-cli).
+# anthropic (pi-claude-auth), grok-cli (pi-grok-cli), and openai-codex, which pi itself provides
+# (built-in openai-codex-responses API and ChatGPT login).
 RETAINED_PROVIDERS = ("anthropic", "openai-codex", "grok-cli")
 
 

@@ -1,0 +1,78 @@
+#!/bin/bash
+# worktrees-landed: list the linked worktrees of a git repository and say
+# which are safe to remove. Read-only unless --remove is given.
+# Usage: worktrees-landed [repo-path] [--remove]
+#   landed   = clean, and HEAD is in origin/HEAD, in the branch the main
+#              checkout has checked out (first entry of `git worktree list`;
+#              skipped when it is detached), or its PR is merged
+#   fresh    = clean, and no commit was made in it yet: the branch reflog has
+#              only its creation entry (detached: the worktree's HEAD reflog
+#              has no commit, merge, cherry-pick or rebase entry). Never
+#              removed: a parallel slice may have just created it.
+#   pushed   = clean, commits are on a remote branch (branch is kept on removal)
+#   local    = clean, commits exist only in a local branch
+#   dirty    = uncommitted changes (never removed)
+#   busy     = a running process has its cwd or files open inside it (never
+#              removed). Per-worktree devenv services (files under .devenv/)
+#              do not count; a note line reports them.
+# --remove removes "landed" worktrees only, with plain `git worktree remove`,
+# then deletes the local branch with `git branch -d` (git keeps a branch that
+# is not merged into its upstream or the main checkout's HEAD and says so). It
+# never deletes remote branches; it prints the ones left on origin. When devenv services run in a landed worktree that
+# has devenv.nix, it runs `devenv processes down` there first; if services
+# still run after that, it keeps the worktree for the next sweep.
+set -u
+# shellcheck source=lib/worktree-procs.sh
+. "$(dirname "$0")/lib/worktree-procs.sh"
+repo=.; remove=0
+for a in "$@"; do case "$a" in --remove) remove=1;; *) repo=$a;; esac; done
+top=$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.git$||') || { echo "not a git repo: $repo" >&2; exit 2; }
+git -C "$top" fetch -q --prune origin 2>/dev/null
+def=$(git -C "$top" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+git -C "$top" worktree prune
+# Branch of the main checkout; empty when it is detached or bare.
+mainbr=$(git -C "$top" worktree list --porcelain | awk '/^branch /{print substr($0,19); exit} /^(detached|bare)?$/{exit}')
+wt_snapshot
+contained() { git -C "$wt" merge-base --is-ancestor HEAD "$1" 2>/dev/null; }
+# fresh: no work was committed in this worktree yet (see header).
+fresh() {
+  if [ "$br" = "(detached)" ]; then
+    ! git -C "$wt" reflog show --format=%gs HEAD 2>/dev/null | grep -qE '^(commit|merge|cherry-pick|rebase)'
+  else
+    ! git -C "$top" reflog show --format=%gs "refs/heads/$br" 2>/dev/null | grep -qv '^branch: Created from '
+  fi
+}
+printf "%-8s %-40s %s\n" STATE BRANCH PATH
+git -C "$top" worktree list --porcelain | awk '/^worktree /{w=substr($0,10)} /^branch /{print w"\t"substr($0,19)} /^detached/{print w"\t(detached)"}' | tail -n +2 |
+while IFS=$'\t' read -r wt br; do
+  procs=$(wt_classify "$wt")
+  svc=$(printf '%s\n' "$procs" | awk -F'\t' '$1=="services"{print $2}')
+  if printf '%s\n' "$procs" | grep -q '^other'; then st=busy
+  elif [ -n "$(git -C "$wt" status --porcelain 2>/dev/null)" ]; then st=dirty
+  elif fresh; then st=fresh
+  elif contained "$def" || { [ -n "$mainbr" ] && contained "refs/heads/$mainbr"; }; then st=landed
+  elif [ "$br" != "(detached)" ] && command -v gh >/dev/null && \
+       [ "$(cd "$top" && gh pr list --state merged --head "$br" --json number --jq length 2>/dev/null)" = "1" ] && \
+       [ "$(git -C "$wt" rev-parse HEAD)" = "$(git -C "$top" rev-parse "origin/$br" 2>/dev/null || git -C "$top" rev-parse "$br")" ]; then st=landed
+  elif [ -n "$(git -C "$top" for-each-ref --contains "$(git -C "$wt" rev-parse HEAD)" refs/remotes --format=x | head -1)" ]; then st=pushed
+  else st=local; fi
+  printf "%-8s %-40s %s\n" "$st" "$br" "$wt"
+  [ "${svc:-0}" -gt 0 ] && echo "         note: devenv services run here ($svc processes hold files under .devenv)"
+  if [ $remove -eq 1 ] && [ "$st" = landed ]; then
+    if [ "${svc:-0}" -gt 0 ]; then
+      if [ ! -f "$wt/devenv.nix" ]; then echo "         kept: processes hold files under .devenv and devenv.nix is missing"; continue; fi
+      (cd "$wt" && devenv processes down) </dev/null || { echo "         kept: devenv processes down failed"; continue; }
+      wt_snapshot
+      if [ "$(wt_classify "$wt" | awk -F'\t' '$1=="services"{print $2}')" != 0 ]; then
+        echo "         kept: devenv services still run after devenv processes down; the next sweep removes it"; continue
+      fi
+      echo "         stopped devenv services in $wt"
+    fi
+    git -C "$top" worktree remove "$wt" </dev/null || continue
+    echo "         removed $wt"
+    [ "$br" = "(detached)" ] && continue
+    if git -C "$top" branch -q -d "$br" </dev/null 2>/dev/null; then echo "         deleted branch $br"
+    else echo "         kept branch $br: git branch -d refused (not merged into its upstream or HEAD)"; fi
+    if git -C "$top" show-ref -q --verify "refs/remotes/origin/$br"; then echo "         remote branch origin/$br remains"; fi
+  fi
+done

@@ -3,6 +3,7 @@
 """Check the portable Pi configuration policy."""
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -13,7 +14,6 @@ EXPECTED_PACKAGES = [
     "git:github.com/edxeth/pi-claude-auth",
     "git:github.com/edxeth/pi-subagents",
     "git:github.com/edxeth/pi-tasks",
-    "npm:@howaboua/pi-codex-conversion",
     "git:github.com/edxeth/pi-better-skills",
     "npm:@eko24ive/pi-ask",
     "npm:pi-fancy-footer",
@@ -23,6 +23,7 @@ EXPECTED_PACKAGES = [
 ALLOWED_AGENT_EXTENSIONS = set(EXPECTED_PACKAGES) | {
     "~/.pi/agent/extensions/pi-tps.ts",
     "~/.pi/agent/extensions/skill-gate.ts",
+    "~/.pi/agent/extensions/env-wrap/index.ts",
 }
 EXPECTED_PROVIDERS = set(RETAINED_PROVIDERS)
 FORBIDDEN_TOOLS = {"lsp", "ast_grep_search", "fold"}
@@ -147,10 +148,33 @@ if unlocked_agent_skills != EXPECTED_UNLOCKED_AGENT_SKILLS:
     fail(f"unexpected unlocked agent skills: {sorted(unlocked_agent_skills)}")
 
 extension_entries = {path.name for path in (ROOT / "extensions").iterdir()}
-if extension_entries != {"pi-tps.ts", "skill-gate.ts", "eko24ive-pi-ask.json"}:
+if extension_entries != {"pi-tps.ts", "skill-gate.ts", "eko24ive-pi-ask.json", "env-wrap"}:
     fail(f"extensions directory has unexpected entries: {sorted(extension_entries)}")
 
+env_wrap_files = {path.name for path in (ROOT / "extensions" / "env-wrap").iterdir()}
+if env_wrap_files != {"index.ts", "core.ts", "shell-segments.ts"}:
+    fail(f"extensions/env-wrap has unexpected entries: {sorted(env_wrap_files)}")
+for path in (ROOT / "extensions" / "env-wrap").glob("*.ts"):
+    if "shell-guard" in re.sub(r"^//.*$", "", path.read_text(), flags=re.MULTILINE):
+        fail(f"{path.relative_to(ROOT)} must not depend on shell-guard")
+
+# The worktree tools that setup.sh installs into ~/.pi/agent/bin.
+BIN_FILES = ["wt", "worktrees-landed", "worktrees-idle", "lib/worktree-procs.sh"]
+bin_entries = {str(path.relative_to(ROOT / "bin")) for path in (ROOT / "bin").rglob("*") if path.is_file()}
+if bin_entries != set(BIN_FILES):
+    fail(f"bin has unexpected entries: {sorted(bin_entries)}")
+for name in BIN_FILES[:3]:
+    if not os.access(ROOT / "bin" / name, os.X_OK):
+        fail(f"bin/{name} must be executable")
+
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())
+manifest_files = {entry["path"] for entry in manifest.get("portableFiles", [])}
+missing_files = {
+    *(f"extensions/env-wrap/{name}" for name in env_wrap_files),
+    *(f"bin/{name}" for name in BIN_FILES),
+} - manifest_files
+if missing_files:
+    fail(f"extension-manifest.json portableFiles is missing: {sorted(missing_files)}")
 if manifest.get("packages") != EXPECTED_PACKAGES:
     fail("extension-manifest.json does not match the exact retained package list")
 

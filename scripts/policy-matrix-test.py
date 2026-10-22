@@ -90,8 +90,8 @@ def set_verifier_model(root: Path, route: str) -> None:
     # No retained agent sets a verifier model, so add one to a test copy of worker.
     replace(
         root / "agents/worker.md",
-        "\nmodel: openai-codex/gpt-6-sol",
-        f"\nmodel: openai-codex/gpt-6-sol\nllm-as-a-verifier-model: {route}",
+        "\nmodel: anthropic/claude-opus-5-5",
+        f"\nmodel: anthropic/claude-opus-5-5\nllm-as-a-verifier-model: {route}",
     )
 
 
@@ -178,8 +178,8 @@ expect_rejection("provider override", reject_override, "has an override outside 
 expect_rejection("retired forge agent", lambda root: (root / "agents/forge.md").write_text("---\nmodel: anthropic/claude-opus-5\n---\n"), "forge.md must not exist")
 expect_rejection("retired linear agent", lambda root: (root / "agents/linear.md").write_text("---\nmodel: anthropic/claude-opus-5\n---\n"), "linear.md must not exist")
 expect_rejection("invalid frontmatter", lambda root: (root / "agents/worker.md").write_text("---\nmodel: openai-codex/gpt-5.6-sol\n"), "invalid frontmatter")
-expect_rejection("agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cursor/grok-4"), "has a model outside Claude, GPT, and grok-cli")
-expect_rejection("CPA agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cpa/gpt-5.6-sol"), "has a model outside Claude, GPT, and grok-cli")
+expect_rejection("agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: anthropic/claude-opus-5-5", "\nmodel: cursor/grok-4"), "has a model outside Claude, GPT, and grok-cli")
+expect_rejection("CPA agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: anthropic/claude-opus-5-5", "\nmodel: cpa/gpt-5.6-sol"), "has a model outside Claude, GPT, and grok-cli")
 expect_acceptance("verifier model", lambda root: set_verifier_model(root, "anthropic/claude-opus-5-5:high"))
 expect_rejection("verifier model", lambda root: set_verifier_model(root, "cursor/grok-4"), "has a llm-as-a-verifier-model outside Claude, GPT, and grok-cli")
 expect_rejection("allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cursor/grok-4,"), "allows a model outside Claude, GPT, and grok-cli")
@@ -339,7 +339,7 @@ for model_id in GROK_MODEL_IDS:
     expect_acceptance(
         f"grok-cli agent route {model_id}",
         lambda root, model_id=model_id: replace(
-            root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", f"\nmodel: grok-cli/{model_id}"
+            root / "agents/worker.md", "\nmodel: anthropic/claude-opus-5-5", f"\nmodel: grok-cli/{model_id}"
         ),
     )
     expect_acceptance(
@@ -362,7 +362,7 @@ for route in REJECTED_ROUTES:
     expect_rejection(
         f"agent model {route}",
         lambda root, route=route: replace(
-            root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", f"\nmodel: {route}"
+            root / "agents/worker.md", "\nmodel: anthropic/claude-opus-5-5", f"\nmodel: {route}"
         ),
         "has a model outside Claude, GPT, and grok-cli",
     )

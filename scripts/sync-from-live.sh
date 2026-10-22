@@ -9,11 +9,11 @@ SOURCE_HOME="$(cd "$SOURCE_DIR/../.." && pwd)"
 SKILL_STORE_DIR="${SKILL_STORE_DIR:-$SOURCE_HOME/.agents}"
 
 ROOT_FILES=(
+  AGENTS.md
   settings.json
   models.json
   keybindings.json
   fancy-footer.json
-  pi-codex-conversion.json
   proxies.json
   trust.json
   REALTIME-SYSTEM-PROMPT.md
@@ -21,6 +21,8 @@ ROOT_FILES=(
 )
 SYNC_DIRS=(templates themes oxlint)
 LIVE_AGENTS=(architect cleaner design-builder design github hardener researcher reviewer scout worker)
+# Worktree tools that setup.sh installs into ~/.pi/agent/bin.
+BIN_FILES=(wt worktrees-landed worktrees-idle lib/worktree-procs.sh)
 EXCLUDES=(
   '.DS_Store'
   'auth.json'
@@ -76,7 +78,7 @@ command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 is required" >&2; exit 1; }
 
 for file in "${ROOT_FILES[@]}"; do
-  if [[ ( "$file" == "REALTIME-SYSTEM-PROMPT.md" || "$file" == "pi-codex-conversion.json" ) && ! -e "$SOURCE_DIR/$file" ]]; then
+  if [[ "$file" == "REALTIME-SYSTEM-PROMPT.md" && ! -e "$SOURCE_DIR/$file" ]]; then
     echo "Live source has no $file; keeping the repository copy." >&2
     continue
   fi
@@ -90,6 +92,9 @@ for agent in "${LIVE_AGENTS[@]}"; do
 done
 for skill in bro msw cmux; do
   require_path "$SOURCE_DIR/skills/$skill"
+done
+for tool in "${BIN_FILES[@]}"; do
+  require_path "$SOURCE_DIR/bin/$tool"
 done
 
 echo "Syncing Pi configuration from $SOURCE_DIR"
@@ -120,6 +125,14 @@ for agent in "${LIVE_AGENTS[@]}"; do
 done
 sync_dir "$SOURCE_DIR/scripts" "$REPO_DIR/agent-scripts"
 
+# The live bin directory also holds host tools (heavy, fd, artifacts-sweep); copy only the shipped ones.
+for tool in "${BIN_FILES[@]}"; do
+  mkdir -p "$(dirname "$REPO_DIR/bin/$tool")"
+  # Drop the comment line that names a host artifact path.
+  grep -v '^# Approved proposal: ~/.pi/artifacts/' "$SOURCE_DIR/bin/$tool" > "$REPO_DIR/bin/$tool"
+  chmod "$(stat -f %Lp "$SOURCE_DIR/bin/$tool")" "$REPO_DIR/bin/$tool"
+done
+
 skill_stage="$(mktemp -d)"
 trap 'rm -rf "$skill_stage"' EXIT
 for skill in bro msw cmux; do
@@ -149,12 +162,37 @@ rsync -a --delete "$skill_stage/" "$REPO_DIR/skills/"
 require_path "$SOURCE_DIR/extensions/pi-tps.ts"
 require_path "$SOURCE_DIR/extensions/skill-gate.ts"
 require_path "$SOURCE_DIR/extensions/eko24ive-pi-ask.json"
+require_path "$SOURCE_DIR/extensions/env-wrap/index.ts"
+require_path "$SOURCE_DIR/extensions/env-wrap/core.ts"
+require_path "$SOURCE_DIR/extensions/shell-guard.ts"
 mkdir -p "$REPO_DIR/extensions"
 find "$REPO_DIR/extensions" -mindepth 1 -maxdepth 1 \
-  ! -name 'pi-tps.ts' ! -name 'skill-gate.ts' ! -name 'eko24ive-pi-ask.json' -exec rm -rf {} +
+  ! -name 'pi-tps.ts' ! -name 'skill-gate.ts' ! -name 'eko24ive-pi-ask.json' ! -name 'env-wrap' -exec rm -rf {} +
 cp "$SOURCE_DIR/extensions/pi-tps.ts" "$REPO_DIR/extensions/pi-tps.ts"
 cp "$SOURCE_DIR/extensions/skill-gate.ts" "$REPO_DIR/extensions/skill-gate.ts"
 cp "$SOURCE_DIR/extensions/eko24ive-pi-ask.json" "$REPO_DIR/extensions/eko24ive-pi-ask.json"
+
+# env-wrap imports parseSegments from shell-guard.ts, which is host policy and stays out of this repository.
+# Ship the parser as env-wrap/shell-segments.ts and point core.ts at it.
+mkdir -p "$REPO_DIR/extensions/env-wrap"
+cp "$SOURCE_DIR/extensions/env-wrap/index.ts" "$REPO_DIR/extensions/env-wrap/index.ts"
+sed 's#"\.\./shell-guard\.ts"#"./shell-segments.ts"#' "$SOURCE_DIR/extensions/env-wrap/core.ts" > "$REPO_DIR/extensions/env-wrap/core.ts"
+python3 - "$SOURCE_DIR/extensions/shell-guard.ts" "$REPO_DIR/extensions/env-wrap/shell-segments.ts" <<'PY'
+import re
+import sys
+
+text = open(sys.argv[1]).read()
+start = text.index("/** dynamic:")
+begin = text.index("export function parseSegments")
+match = re.search(r"^}$", text[begin:], re.MULTILINE)
+assert match, "parseSegments end not found"
+end = begin + match.end()
+header = (
+    "// Command parser that env-wrap uses. Extracted from the live shell-guard.ts by\n"
+    "// scripts/sync-from-live.sh; do not edit here.\n\n"
+)
+open(sys.argv[2], "w").write(header + text[start:end] + "\n")
+PY
 
 python3 "$SCRIPT_DIR/normalize-config.py"
 python3 "$SCRIPT_DIR/scan-secrets.py" "$REPO_DIR"

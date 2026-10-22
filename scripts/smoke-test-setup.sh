@@ -25,6 +25,9 @@ exit 91
 SH
   chmod +x "$NETWORK_GUARD_BIN/$command"
 done
+mkdir -p "$TARGET/bin"
+printf '#!/bin/sh
+' > "$TARGET/bin/heavy"
 cat > "$TARGET/settings.json" <<'JSON'
 {
   "personalSetting": true,
@@ -64,7 +67,18 @@ PY
 test -f "$TARGET/extensions/pi-tps.ts"
 test -f "$TARGET/extensions/skill-gate.ts"
 test -f "$TARGET/extensions/eko24ive-pi-ask.json"
-test "$(find "$TARGET/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "3"
+test -f "$TARGET/extensions/env-wrap/index.ts"
+test -f "$TARGET/extensions/env-wrap/core.ts"
+test -f "$TARGET/extensions/env-wrap/shell-segments.ts"
+test ! -e "$TARGET/extensions/shell-guard.ts"
+test "$(find "$TARGET/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "4"
+for tool in wt worktrees-landed worktrees-idle; do
+  test -x "$TARGET/bin/$tool"
+done
+test -f "$TARGET/bin/lib/worktree-procs.sh"
+test -f "$TARGET/bin/heavy"
+"$TARGET/bin/wt" --help | grep -q "wt land"
+test ! -e "$TARGET/pi-codex-conversion.json"
 BACKUP="$(find "$TARGET" -maxdepth 1 -type d -name 'extensions.backup-*' -print -quit)"
 test -n "$BACKUP"
 cmp <(printf 'old extension\n') "$BACKUP/old.ts"
@@ -171,7 +185,19 @@ fi
 grep -q "Error: npx is required to restore managed skills" "$NO_NPX_HOME/output"
 
 NORMALIZE_ROOT="$TEST_HOME/normalize"
-mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents" "$NORMALIZE_ROOT/skills/vendored"
+mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents" "$NORMALIZE_ROOT/skills/vendored" "$NORMALIZE_ROOT/agent-scripts"
+cat > "$NORMALIZE_ROOT/AGENTS.md" <<'EOF_AGENTS'
+# Global Agent Guidelines
+
+- GitHub: `gh` CLI is installed and authenticated.
+- Browser: `agent-browser` runs Lightpanda, which renders no pixels.
+- Shell on this Mac: set command limits with the bash tool `timeout` parameter.
+- `heavy` starts a job when one of 8 host-wide slots is free.
+- Size the bash tool `timeout` as the expected runtime plus the heavy wait.
+- macOS tools are BSD: use `sed -i ''`.
+- Use `ast-grep` for syntax-aware search.
+EOF_AGENTS
+printf 'if a forge launch reports the runtime is missing\n' > "$NORMALIZE_ROOT/agent-scripts/provision-llm-verifier-venv.sh"
 cp "$REPO_DIR/scripts/normalize-config.py" "$NORMALIZE_ROOT/scripts/normalize-config.py"
 cp "$REPO_DIR/scripts/model_policy.py" "$NORMALIZE_ROOT/scripts/model_policy.py"
 cp "$REPO_DIR/extension-manifest.json" "$NORMALIZE_ROOT/extension-manifest.json"
@@ -211,7 +237,7 @@ cat > "$NORMALIZE_ROOT/agents/scout.md" <<'EOF_AGENT'
 model: grok-cli/grok-4.7
 llm-as-a-verifier-model: anthropic/claude-opus-5
 allowed-models: anthropic/claude-opus-5, grok-cli/grok-4.7:high, explabs/claude-opus-5.5, grok-cli/claude-x, grok-cli/, cursor/grok-code-fast-1
-extensions: ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@old, git:github.com/edxeth/pi-subagents@old, git:github.com/edxeth/pi-tasks@old, npm:@howaboua/pi-codex-conversion@old, git:github.com/edxeth/pi-better-skills@old, npm:@eko24ive/pi-ask@old, npm:eko24ive/pi-ask@old, npm:pi-fancy-footer@old, git:github.com/edxeth/pi-ralph-loop@old, npm:pi-grok-cli@old, npm:rejected@1
+extensions: ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth@old, git:github.com/edxeth/pi-subagents@old, git:github.com/edxeth/pi-tasks@old, npm:@howaboua/pi-codex-conversion@old, ~/.pi/agent/extensions/env-wrap/index.ts, ~/.pi/agent/extensions/shell-guard.ts, git:github.com/edxeth/pi-better-skills@old, npm:@eko24ive/pi-ask@old, npm:eko24ive/pi-ask@old, npm:pi-fancy-footer@old, git:github.com/edxeth/pi-ralph-loop@old, npm:pi-grok-cli@old, npm:rejected@1
  tools: unchanged
 tools: read,lsp,ast_grep_search,fold,bash
 ---
@@ -250,6 +276,12 @@ agent = (root / "agents/scout.md").read_text()
 alias = (root / "agents/alias.md").read_text()
 worker = (root / "agents/worker.md").read_text()
 assert "npm:@eko24ive/pi-ask" in alias
+assert "~/.pi/agent/extensions/env-wrap/index.ts" in agent
+assert "shell-guard" not in agent
+assert "pi-codex-conversion" not in agent
+guidelines = (root / "AGENTS.md").read_text()
+assert guidelines == "# Global Agent Guidelines\n\n- GitHub: `gh` CLI is installed and authenticated.\n- Use `ast-grep` for syntax-aware search.\n"
+assert "an llm-as-a-verifier launch" in (root / "agent-scripts/provision-llm-verifier-venv.sh").read_text()
 assert "skills: design-craft, design-qa=auto, tdd, vendored, find-standards\n" in alias
 assert "inject-skills: \n" in alias
 assert "Run ~/.pi/agent/skills/exa/scripts/exa.sh in the pane." in alias
@@ -311,11 +343,11 @@ done
 SYNC_REPO="$TEST_HOME/sync-repo"
 SYNC_HOME="$TEST_HOME/live-home"
 LIVE_AGENT="$SYNC_HOME/.pi/agent"
-mkdir -p "$SYNC_REPO" "$LIVE_AGENT/agents" "$LIVE_AGENT/extensions" \
+mkdir -p "$SYNC_REPO" "$LIVE_AGENT/agents" "$LIVE_AGENT/extensions/env-wrap" "$LIVE_AGENT/bin/lib" \
   "$LIVE_AGENT/scripts" "$LIVE_AGENT/skills" "$SYNC_HOME/.agents"
 rsync -a --exclude '.git' "$REPO_DIR/" "$SYNC_REPO/"
 for file in settings.json models.json keybindings.json fancy-footer.json \
-  pi-codex-conversion.json proxies.json trust.json REALTIME-SYSTEM-PROMPT.md \
+  proxies.json trust.json REALTIME-SYSTEM-PROMPT.md AGENTS.md \
   oxlint.config.ts; do
   cp "$SYNC_REPO/$file" "$LIVE_AGENT/$file"
 done
@@ -341,16 +373,26 @@ for name, destination in manifest["links"].items():
 os.symlink("/tmp/retired-prd", target / "to-prd")
 os.symlink("/tmp/retired-slices", target / "to-slices")
 PY
+cp "$SYNC_REPO/extensions/env-wrap/index.ts" "$LIVE_AGENT/extensions/env-wrap/index.ts"
+# Live core.ts imports the parser from shell-guard.ts; the sync must redirect it to shell-segments.ts.
+sed 's#"./shell-segments.ts"#"../shell-guard.ts"#' "$SYNC_REPO/extensions/env-wrap/core.ts" > "$LIVE_AGENT/extensions/env-wrap/core.ts"
+{ printf 'export const guardMarker = true;\n\n'; sed 1,3d "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"; printf '\nexport function blockReason() {\n\treturn "host policy";\n}\n'; } > "$LIVE_AGENT/extensions/shell-guard.ts"
+for tool in wt worktrees-landed worktrees-idle lib/worktree-procs.sh; do
+  { [ "$tool" = wt ] && printf '# Approved proposal: ~/.pi/artifacts/parent/x.md\n'; cat "$SYNC_REPO/bin/$tool"; } > "$LIVE_AGENT/bin/$tool"
+  chmod "$(stat -f %Lp "$SYNC_REPO/bin/$tool")" "$LIVE_AGENT/bin/$tool"
+done
+printf '#!/bin/sh\n' > "$LIVE_AGENT/bin/heavy"
 printf '// live pi-tps marker\n' > "$LIVE_AGENT/extensions/pi-tps.ts"
 printf '// live skill-gate marker\n' > "$LIVE_AGENT/extensions/skill-gate.ts"
 printf '{"liveSyncMarker":true}\n' > "$LIVE_AGENT/extensions/eko24ive-pi-ask.json"
 cp "$SYNC_REPO/skills/.skill-lock.json" "$SYNC_HOME/.agents/.skill-lock.json"
-for file in keybindings.json fancy-footer.json pi-codex-conversion.json proxies.json trust.json; do
+for file in keybindings.json fancy-footer.json proxies.json trust.json; do
   printf '{"liveSyncMarker":"%s"}\n' "$file" > "$LIVE_AGENT/$file"
 done
 printf 'live prompt\n' > "$LIVE_AGENT/REALTIME-SYSTEM-PROMPT.md"
 printf 'export default { liveSyncMarker: true };\n' > "$LIVE_AGENT/oxlint.config.ts"
 printf 'live script\n' > "$LIVE_AGENT/scripts/live-script"
+cp "$SYNC_REPO/agent-scripts/provision-llm-verifier-venv.sh" "$LIVE_AGENT/scripts/provision-llm-verifier-venv.sh"
 for directory in templates themes oxlint; do
   printf 'live %s\n' "$directory" > "$LIVE_AGENT/$directory/live-sync-marker"
 done
@@ -413,7 +455,7 @@ test ! -e "$SYNC_REPO/agents/forge.md"
 cmp "$LIVE_MODELS_BEFORE" "$LIVE_AGENT/models.json"
 cmp "$LIVE_SETTINGS_BEFORE" "$LIVE_AGENT/settings.json"
 cmp "$LIVE_WORKER_BEFORE" "$LIVE_AGENT/agents/worker.md"
-for file in keybindings.json fancy-footer.json pi-codex-conversion.json proxies.json trust.json \
+for file in keybindings.json fancy-footer.json proxies.json trust.json AGENTS.md \
   REALTIME-SYSTEM-PROMPT.md oxlint.config.ts; do
   cmp "$LIVE_AGENT/$file" "$SYNC_REPO/$file"
 done
@@ -428,6 +470,17 @@ for skill in bro msw cmux; do
   cmp "$LIVE_AGENT/skills/$skill/live-sync-marker" "$SYNC_REPO/skills/$skill/live-sync-marker"
 done
 cmp "$LIVE_AGENT/extensions/pi-tps.ts" "$SYNC_REPO/extensions/pi-tps.ts"
+cmp "$LIVE_AGENT/extensions/env-wrap/index.ts" "$SYNC_REPO/extensions/env-wrap/index.ts"
+grep -q 'from "./shell-segments.ts"' "$SYNC_REPO/extensions/env-wrap/core.ts"
+! grep -q 'shell-guard' "$SYNC_REPO/extensions/env-wrap/core.ts"
+grep -q 'export function parseSegments' "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"
+! grep -q 'guardMarker\|blockReason' "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"
+test ! -e "$SYNC_REPO/extensions/shell-guard.ts"
+for tool in wt worktrees-landed worktrees-idle lib/worktree-procs.sh; do
+  cmp <(grep -v '^# Approved proposal' "$LIVE_AGENT/bin/$tool") "$SYNC_REPO/bin/$tool"
+  test "$(stat -f %Lp "$LIVE_AGENT/bin/$tool")" = "$(stat -f %Lp "$SYNC_REPO/bin/$tool")"
+done
+test ! -e "$SYNC_REPO/bin/heavy"
 cmp "$LIVE_AGENT/extensions/skill-gate.ts" "$SYNC_REPO/extensions/skill-gate.ts"
 cmp "$LIVE_AGENT/extensions/eko24ive-pi-ask.json" "$SYNC_REPO/extensions/eko24ive-pi-ask.json"
 grep -q 'claude-live-sync' "$SYNC_REPO/models.json"
@@ -462,7 +515,7 @@ PY
 grep -q '"liveSyncMarker": true' "$SYNC_REPO/settings.json"
 test ! -e "$SYNC_REPO/skills/remove-me"
 test ! -e "$SYNC_REPO/extensions/remove-me"
-test "$(find "$SYNC_REPO/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "3"
+test "$(find "$SYNC_REPO/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "4"
 python3 "$SYNC_REPO/scripts/check-config.py" >/dev/null
 python3 - "$SYNC_REPO/skills/managed-metadata.json" "$SYNC_REPO/skills/symlinks.json" <<'PY'
 import json

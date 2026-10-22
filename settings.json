@@ -44,7 +44,6 @@
     "git:github.com/edxeth/pi-claude-auth",
     "git:github.com/edxeth/pi-subagents",
     "git:github.com/edxeth/pi-tasks",
-    "npm:@howaboua/pi-codex-conversion",
     "git:github.com/edxeth/pi-better-skills",
     "npm:@eko24ive/pi-ask",
     "npm:pi-fancy-footer",

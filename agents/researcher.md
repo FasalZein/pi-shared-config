@@ -5,7 +5,7 @@ model: anthropic/claude-sonnet-5-5
 thinking: medium
 allow-model-override: true
 allowed-models: anthropic/claude-opus-5-5:low, openai-codex/gpt-6.1-sol:low, grok-cli/grok-4.7:high, anthropic/claude-fable-5-1:low, grok-cli/grok-4.7-build-fast:xhigh
-extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 tools: read,write,grep,find,ls,bash,codemode
 skills: find-standards, context7, exa, firecrawl, tinyfish, convert-documents-to-markdown, technical-writing
 mode: background

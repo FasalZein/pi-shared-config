@@ -2,7 +2,7 @@
 name: github
 deny-tools: edit, grep, find, ls, image_gen
 description: Read, brief, publish, and change GitHub issues without flooding the parent - fact lookups, complete issue briefs, specification drafts and ticket publishing from settled decisions, authorized writes with readback. Shaping and interviews go to architect.
-extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
+extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 model: anthropic/claude-sonnet-5-5
 thinking: high
 allow-model-override: true
