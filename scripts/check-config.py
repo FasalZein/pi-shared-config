@@ -67,8 +67,9 @@ for provider_name, provider in providers.items():
             fail(f"models.json has an override outside Claude, GPT, and grok-cli: {provider_name}/{model_id}")
 
 agent_dir = ROOT / "agents"
-if (agent_dir / "linear.md").exists():
-    fail("agents/linear.md must not exist")
+for retired_agent in ("linear", "forge"):
+    if (agent_dir / f"{retired_agent}.md").exists():
+        fail(f"agents/{retired_agent}.md must not exist")
 for path in sorted(agent_dir.glob("*.md")):
     text = path.read_text()
     parts = text.split("---", 2)
@@ -151,6 +152,74 @@ if extension_entries != {"pi-tps.ts", "skill-gate.ts", "eko24ive-pi-ask.json"}:
 manifest = json.loads((ROOT / "extension-manifest.json").read_text())
 if manifest.get("packages") != EXPECTED_PACKAGES:
     fail("extension-manifest.json does not match the exact retained package list")
+
+# Canonical specifications are repository files; delivery tickets are GitHub issues.
+SPEC_POLICY_FORBIDDEN = {
+    "AGENTS.md": ["publishes the spec as an issue"],
+    "agents/architect.md": ["spec issue", "Spec issue", "specification issue", "vault records"],
+    "agents/github.md": ["Publish the spec as the skill instructs", "parent spec issue"],
+    "docs/workflow.md": ["publish settled specifications"],
+    "skill-adaptations/adapted/to-spec/SKILL.md": ["publish it to the project issue tracker"],
+    "skill-adaptations/adapted/setup-matt-pocock-skills/issue-tracker-github.md": [
+        "Issues and specs for this repo live as GitHub issues",
+    ],
+}
+SPEC_POLICY_REQUIRED = {
+    "AGENTS.md": ["docs/agents/issue-tracker.md", "docs/specs/<name>.md", "read-only"],
+    "agents/architect.md": [
+        "docs/specs/<name>.md", "SPEC: <repository path of the specification>",
+        "The canonical specification path is a reference, not an implementation detail",
+    ],
+    "agents/github.md": ["docs/specs/<name>.md", "Do not publish the specification as an issue"],
+    "skill-adaptations/adapted/to-spec/SKILL.md": [
+        "docs/specs/<kebab-case-name>.md", "Do NOT publish the spec as an issue", "Check with the user that these seams",
+    ],
+    "skill-adaptations/adapted/to-tickets/SKILL.md": [
+        "The canonical spec path is a reference", "**Spec:** the canonical spec path",
+    ],
+    "skill-adaptations/adapted/setup-matt-pocock-skills/SKILL.md": ["### Specifications", "Section A2"],
+    "skill-adaptations/adapted/setup-matt-pocock-skills/issue-tracker-github.md": ["## Specifications"],
+}
+for relative, phrases in SPEC_POLICY_FORBIDDEN.items():
+    text = (ROOT / relative).read_text()
+    for phrase in phrases:
+        if phrase in text:
+            fail(f"{relative} contradicts the repository specification policy: {phrase!r}")
+for relative, phrases in SPEC_POLICY_REQUIRED.items():
+    text = (ROOT / relative).read_text()
+    for phrase in phrases:
+        if phrase not in text:
+            fail(f"{relative} is missing repository specification policy text: {phrase!r}")
+
+adaptations = ROOT / "skill-adaptations"
+adaptation_manifest = json.loads((adaptations / "manifest.json").read_text())
+for skill, record in adaptation_manifest.get("skills", {}).items():
+    locked = lock["skills"].get(skill, {})
+    if (locked.get("source"), locked.get("skillPath")) != (record.get("source"), record.get("skillPath")):
+        fail(f"skill adaptation {skill} does not match its skill lock source and path")
+    if locked.get("skillFolderHash") != record.get("upstreamSkillFolderHash"):
+        fail(f"skill adaptation {skill} upstreamSkillFolderHash does not match the locked skillFolderHash")
+    if symlink_manifest.get("links", {}).get(skill) != f"../../../.agents/skills/{skill}":
+        fail(f"skill adaptation {skill} must stay a link to the shared skill store")
+    for name in record.get("files", []):
+        upstream_file = adaptations / "upstream" / skill / name
+        adapted_file = adaptations / "adapted" / skill / name
+        if not upstream_file.is_file() or not adapted_file.is_file():
+            fail(f"skill adaptation {skill}/{name} needs upstream and adapted copies")
+            continue
+        if upstream_file.read_bytes() == adapted_file.read_bytes():
+            fail(f"skill adaptation {skill}/{name} has no local change")
+        if name == "SKILL.md" and "Local adaptation from pi-shared-config" not in adapted_file.read_text():
+            fail(f"skill adaptation {skill}/{name} must state its local adaptation")
+    for name in record.get("priorAdapted", []):
+        prior_file = adaptations / "prior-adapted" / skill / name
+        if name not in record.get("files", []) or not prior_file.is_file():
+            fail(f"skill adaptation {skill}/{name} lists a prior adapted copy that is missing")
+        elif prior_file.read_bytes() in {
+            (adaptations / "upstream" / skill / name).read_bytes(),
+            (adaptations / "adapted" / skill / name).read_bytes(),
+        }:
+            fail(f"skill adaptation {skill}/{name} prior adapted copy must differ from upstream and adapted")
 
 for path in ROOT.rglob("*"):
     if not path.is_file() or ".git" in path.parts:

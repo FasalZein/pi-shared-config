@@ -86,6 +86,15 @@ def replace(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new, 1))
 
 
+def set_verifier_model(root: Path, route: str) -> None:
+    # No retained agent sets a verifier model, so add one to a test copy of worker.
+    replace(
+        root / "agents/worker.md",
+        "\nmodel: openai-codex/gpt-6-sol",
+        f"\nmodel: openai-codex/gpt-6-sol\nllm-as-a-verifier-model: {route}",
+    )
+
+
 def remove_skill(root: Path, skill: str) -> None:
     lock_path = root / "skills/.skill-lock.json"
     links_path = root / "skills/symlinks.json"
@@ -166,11 +175,13 @@ def reject_override(root: Path) -> None:
 
 
 expect_rejection("provider override", reject_override, "has an override outside Claude, GPT, and grok-cli")
+expect_rejection("retired forge agent", lambda root: (root / "agents/forge.md").write_text("---\nmodel: anthropic/claude-opus-5\n---\n"), "forge.md must not exist")
 expect_rejection("retired linear agent", lambda root: (root / "agents/linear.md").write_text("---\nmodel: anthropic/claude-opus-5\n---\n"), "linear.md must not exist")
 expect_rejection("invalid frontmatter", lambda root: (root / "agents/worker.md").write_text("---\nmodel: openai-codex/gpt-5.6-sol\n"), "invalid frontmatter")
 expect_rejection("agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cursor/grok-4"), "has a model outside Claude, GPT, and grok-cli")
 expect_rejection("CPA agent model", lambda root: replace(root / "agents/worker.md", "\nmodel: openai-codex/gpt-6-sol", "\nmodel: cpa/gpt-5.6-sol"), "has a model outside Claude, GPT, and grok-cli")
-expect_rejection("verifier model", lambda root: replace(root / "agents/forge.md", "\nllm-as-a-verifier-model: anthropic/claude-opus-5-5:high", "\nllm-as-a-verifier-model: cursor/grok-4"), "has a llm-as-a-verifier-model outside Claude, GPT, and grok-cli")
+expect_acceptance("verifier model", lambda root: set_verifier_model(root, "anthropic/claude-opus-5-5:high"))
+expect_rejection("verifier model", lambda root: set_verifier_model(root, "cursor/grok-4"), "has a llm-as-a-verifier-model outside Claude, GPT, and grok-cli")
 expect_rejection("allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cursor/grok-4,"), "allows a model outside Claude, GPT, and grok-cli")
 expect_rejection("CPA allowed model", lambda root: replace(root / "agents/worker.md", "\nallowed-models:", "\nallowed-models: cpa/gpt-5.6-sol,"), "allows a model outside Claude, GPT, and grok-cli")
 expect_rejection("agent extension", lambda root: replace(root / "agents/worker.md", "\nextensions:", "\nextensions: /tmp/rejected.ts,"), "uses a rejected extension")
@@ -339,11 +350,7 @@ for model_id in GROK_MODEL_IDS:
     )
     expect_acceptance(
         f"grok-cli verifier model {model_id}",
-        lambda root, model_id=model_id: replace(
-            root / "agents/forge.md",
-            "\nllm-as-a-verifier-model: anthropic/claude-opus-5-5:high",
-            f"\nllm-as-a-verifier-model: grok-cli/{model_id}:high",
-        ),
+        lambda root, model_id=model_id: set_verifier_model(root, f"grok-cli/{model_id}:high"),
     )
 
 for route in REJECTED_ROUTES:
@@ -368,11 +375,7 @@ for route in REJECTED_ROUTES:
     )
     expect_rejection(
         f"verifier model {route}",
-        lambda root, route=route: replace(
-            root / "agents/forge.md",
-            "\nllm-as-a-verifier-model: anthropic/claude-opus-5-5:high",
-            f"\nllm-as-a-verifier-model: {route}",
-        ),
+        lambda root, route=route: set_verifier_model(root, route),
         "has a llm-as-a-verifier-model outside Claude, GPT, and grok-cli",
     )
 
@@ -387,5 +390,84 @@ for model_id in ("claude-x", "", "grok"):
         lambda root, model_id=model_id: set_grok_override(root, model_id),
         "has an override outside Claude, GPT, and grok-cli",
     )
+
+
+def revert_adaptation(root: Path, relative: str) -> None:
+    shutil.copyfile(root / "skill-adaptations/upstream" / relative, root / "skill-adaptations/adapted" / relative)
+
+
+expect_rejection(
+    "spec issue in global guidance",
+    lambda root: replace(root / "AGENTS.md", "never publishes a spec issue", "publishes the spec as an issue"),
+    "AGENTS.md contradicts the repository specification policy",
+)
+expect_rejection(
+    "spec issue in architect hand-off",
+    lambda root: replace(root / "agents/architect.md", "SPEC: <repository path of the specification>", "- Spec issue: <number and URL>"),
+    "agents/architect.md contradicts the repository specification policy",
+)
+expect_rejection(
+    "architect vault writes",
+    lambda root: replace(root / "agents/architect.md", "edit documentation, specifications", "edit documentation, vault records, specifications"),
+    "agents/architect.md contradicts the repository specification policy: 'vault records'",
+)
+expect_rejection(
+    "github spec publication",
+    lambda root: replace(root / "agents/github.md", "Do not publish the specification as an issue.", "Publish the spec as the skill instructs."),
+    "agents/github.md contradicts the repository specification policy",
+)
+for relative in ("to-spec/SKILL.md", "setup-matt-pocock-skills/issue-tracker-github.md"):
+    expect_rejection(
+        f"upstream {relative} restored as adapted",
+        lambda root, relative=relative: revert_adaptation(root, relative),
+        "contradicts the repository specification policy",
+    )
+for relative in ("to-tickets/SKILL.md", "setup-matt-pocock-skills/SKILL.md"):
+    expect_rejection(
+        f"upstream {relative} restored as adapted",
+        lambda root, relative=relative: revert_adaptation(root, relative),
+        f"skill adaptation {relative.split('/')[0]}/SKILL.md has no local change",
+    )
+
+
+def unlink_adapted_skill(root: Path) -> None:
+    update_json(root / "skills/symlinks.json", lambda value: value["links"].update({"to-spec": "/tmp/pi-only-to-spec"}))
+
+
+expect_rejection("Pi-only adapted skill copy", unlink_adapted_skill, "skill adaptation to-spec must stay a link to the shared skill store")
+
+
+def mismatch_adaptation_hash(root: Path) -> None:
+    update_json(
+        root / "skills/.skill-lock.json",
+        lambda value: value["skills"]["setup-matt-pocock-skills"].update({"skillFolderHash": "ec07f82df54064d01aa1648670e81da41e2cbdc2"}),
+    )
+
+
+expect_rejection(
+    "adaptation upstream hash differs from lock",
+    mismatch_adaptation_hash,
+    "skill adaptation setup-matt-pocock-skills upstreamSkillFolderHash does not match the locked skillFolderHash",
+)
+expect_rejection(
+    "architect file-path rule without spec exception",
+    lambda root: replace(root / "agents/architect.md", " The canonical specification path is a reference, not an implementation detail: every ticket links to it.", ""),
+    "agents/architect.md is missing repository specification policy text",
+)
+expect_rejection(
+    "github workflow row publishes specifications",
+    lambda root: replace(root / "docs/workflow.md", "prepare specification drafts for the parent or `architect` to place, and publish authorized delivery tickets", "and publish settled specifications and tickets"),
+    "docs/workflow.md contradicts the repository specification policy",
+)
+expect_rejection(
+    "local ticket template without spec field",
+    lambda root: replace(root / "skill-adaptations/adapted/to-tickets/SKILL.md", "**Spec:** the canonical spec path", "the canonical spec path"),
+    "to-tickets/SKILL.md is missing repository specification policy text",
+)
+expect_rejection(
+    "missing prior adapted copy",
+    lambda root: (root / "skill-adaptations/prior-adapted/to-tickets/SKILL.md").unlink(),
+    "skill adaptation to-tickets/SKILL.md lists a prior adapted copy that is missing",
+)
 
 print("Policy acceptance and rejection matrix passed.")

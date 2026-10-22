@@ -48,6 +48,23 @@ The setup also restores the research auxiliary set. This set includes standards,
 
 The retired `to-prd` and `to-slices` links are not restored.
 
+## Local skill adaptations
+
+Canonical specifications are repository files. Delivery tickets are GitHub issues. Upstream `to-spec`, `to-tickets`, and `setup-matt-pocock-skills` publish specifications as issues, so this repository adapts them.
+
+The shared store `~/.agents/skills` keeps the only active copy. Pi skill links still point to it. `skill-adaptations/` holds, for each changed file, the supported upstream copy and the adapted copy. `skill-adaptations/manifest.json` records the upstream source, path, and folder hash. The skill lock keeps the upstream hash, so it does not describe the adapted content.
+
+Setup applies the adaptations after the skill restore. To check or reapply them without a full setup, run:
+
+```bash
+python3 scripts/skill-adaptations.py check
+python3 scripts/skill-adaptations.py apply
+```
+
+`apply` replaces a file only when it equals the supported upstream copy or a recorded prior adapted copy. Prior adapted copies live in `skill-adaptations/prior-adapted/` and are listed under `priorAdapted` in the manifest; they let `apply` upgrade an older adaptation. A second run changes nothing. If any file differs from both copies, `apply` changes no file and fails. Then copy the new upstream file to `skill-adaptations/upstream/`, port the change to `skill-adaptations/adapted/`, and run `npm run verify`. A skill that is not installed is skipped and reported; `check` fails until it is adapted.
+
+Skill updates outside setup, for example `npx skills update`, can overwrite the adapted files. Setup and these commands cannot intercept every installer. Run `check` after such an update.
+
 ## Configuration behavior
 
 On a new machine, setup copies `models.json` and `settings.json`. On an existing machine, setup preserves other personal settings but replaces these managed fields:
@@ -80,7 +97,7 @@ Run:
 ./scripts/sync-from-live.sh
 ```
 
-The sync reads the active local setup. It refreshes the eleven live agent definitions, model data, `pi-tps.ts`, `skill-gate.ts`, the skill lock, and skill links. It then reapplies the exact package list and the provider and model policy. It never changes installed live files.
+The sync reads the active local setup. It refreshes the ten live agent definitions, model data, `pi-tps.ts`, `skill-gate.ts`, the skill lock, and skill links. It then reapplies the exact package list and the provider and model policy. It never changes installed live files. It does not change `skill-adaptations/`.
 
 The sync excludes the retired `to-prd` and `to-slices` links. It keeps the repository versions of policy documents and the `bro`, `cmux`, and `msw` skills.
 
@@ -92,4 +109,4 @@ Run:
 npm run verify
 ```
 
-Verification runs the secret scan, checks package and model policy, checks agent routes and skills, runs `scripts/skill-gate-test.ts`, and runs setup in an isolated home directory. The smoke test disables package, skill, and dependency network work.
+Verification runs the secret scan, checks package and model policy, checks agent routes and skills, runs the skill adaptation tests and `scripts/skill-gate-test.ts`, and runs setup in an isolated home directory. The smoke test disables package, skill, and dependency network work.

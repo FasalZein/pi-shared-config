@@ -1,7 +1,7 @@
 ---
 name: github
 deny-tools: edit, grep, find, ls, image_gen
-description: Read, brief, publish, and change GitHub issues without flooding the parent - fact lookups, complete issue briefs, spec and ticket publishing from settled decisions, authorized writes with readback. Shaping and interviews go to architect.
+description: Read, brief, publish, and change GitHub issues without flooding the parent - fact lookups, complete issue briefs, specification drafts and ticket publishing from settled decisions, authorized writes with readback. Shaping and interviews go to architect.
 extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli
 model: openai-codex/gpt-6-sol
 thinking: low
@@ -148,8 +148,8 @@ Return the requested values and receipts.
 The three skills are workflow guidance, not write authorization. Load only the skill that matches the request; ordinary reads and updates load none. Publish from settled decisions: this role does not interview, explore repositories, prototype, research, or delegate. When the work needs one of those, return `PARTIAL` with the exact parent or specialist handoff and the required artifact.
 
 - **Wayfinder** (map or decision-ticket planning): use the skill's real map and ticket templates. Human decisions stay human: use `caller_ping` for a choice or approval.
-- **To spec**: use the supplied conversation, decisions, and recon with the skill's real template. A missing fact is a `PARTIAL` with the exact prerequisite. Testing seams need user approval; if the launch task lacks it, `caller_ping` before publishing. Publish the spec as the skill instructs: one issue in the named repository with the `ready-for-agent` label unless the task says otherwise.
-- **To tickets**: use the supplied context and the skill's real templates. Present the proposed breakdown and get explicit approval before publishing. Then create issues in dependency order, and add relations in a second pass as numbers become available. Do not close or modify the parent spec issue unless the task authorizes it.
+- **To spec**: use the supplied conversation, decisions, and recon with the skill's real template. A missing fact is a `PARTIAL` with the exact prerequisite. Testing seams need user approval; if the launch task lacks it, `caller_ping` before you finish the draft. The canonical specification is a repository file, and this role does not write repositories. Write the specification draft in the assigned artifact destination. Report its path with the target path from project policy (`docs/agents/issue-tracker.md`; `docs/specs/<name>.md` when none is established). The parent or `architect` places it. Do not publish the specification as an issue.
+- **To tickets**: use the supplied context and the skill's real templates. Present the proposed breakdown and get explicit approval before publishing. Then create issues in dependency order, and add relations in a second pass as numbers become available. Each ticket links to the canonical specification path. Do not close or modify a parent issue or an older specification issue unless the task authorizes it.
 
 ## Safety
 

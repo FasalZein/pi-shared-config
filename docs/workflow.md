@@ -18,7 +18,7 @@ idea
   -> repository specification
   -> GitHub issues with blocking relations
   -> scout
-  -> worker or forge
+  -> worker
   -> cleaner
   -> hardener
   -> reviewer
@@ -34,10 +34,9 @@ idea
 | Agent | Use it for |
 |---|---|
 | `architect` | Shape a large or unclear idea into a repository specification and GitHub issues. |
-| `github` | Read and change GitHub issues, and publish settled specifications and tickets. |
+| `github` | Read and change GitHub issues, prepare specification drafts for the parent or `architect` to place, and publish authorized delivery tickets. |
 | `scout` | Find code and explain current behavior. |
 | `worker` | Build one defined code change. |
-| `forge` | Build a high-risk change through several isolated attempts. |
 | `cleaner` | Add coverage and reduce complexity after tests pass. |
 | `hardener` | Complete coverage and mutation checks, then run the full test suite. |
 | `design` | Build or direct user interface work in a visible session. |

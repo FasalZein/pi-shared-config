@@ -7,7 +7,14 @@ trap 'rm -rf "$TEST_HOME"' EXIT
 TARGET="$TEST_HOME/.pi/agent"
 mkdir -p "$TARGET/extensions"
 printf 'old extension\n' > "$TARGET/extensions/old.ts"
+mkdir -p "$TARGET/agents"
+printf -- '---\nname: forge\n---\n' > "$TARGET/agents/forge.md"
 printf '{"providers":{"rejected":{}}}\n' > "$TARGET/models.json"
+SHARED_SKILLS="$TEST_HOME/.agents/skills"
+mkdir -p "$SHARED_SKILLS"
+cp -R "$REPO_DIR/skill-adaptations/upstream/." "$SHARED_SKILLS/"
+mkdir -p "$SHARED_SKILLS/to-spec/agents"
+printf 'unrelated upstream file\n' > "$SHARED_SKILLS/to-spec/agents/openai.yaml"
 NETWORK_GUARD_BIN="$TEST_HOME/network-guard"
 mkdir -p "$NETWORK_GUARD_BIN"
 for command in npm npx pi; do
@@ -62,9 +69,39 @@ BACKUP="$(find "$TARGET" -maxdepth 1 -type d -name 'extensions.backup-*' -print 
 test -n "$BACKUP"
 cmp <(printf 'old extension\n') "$BACKUP/old.ts"
 test ! -e "$TARGET/agents/linear.md"
+test ! -e "$TARGET/agents/forge.md"
+test "$(cd "$TARGET/agents" && ls *.md | sort | tr '\n' ' ')" = "architect.md cleaner.md design-builder.md design.md github.md hardener.md researcher.md reviewer.md scout.md worker.md "
+test "$(grep -l '^enabled: true$' "$TARGET"/agents/*.md | wc -l | tr -d ' ')" = "10"
 test -f "$TEST_HOME/.agents/.skill-lock.json"
 test ! -e "$TARGET/skills/to-prd"
 test ! -e "$TARGET/skills/to-slices"
+for adapted in $(cd "$REPO_DIR/skill-adaptations/adapted" && find . -type f); do
+  cmp "$REPO_DIR/skill-adaptations/adapted/$adapted" "$SHARED_SKILLS/$adapted"
+done
+cmp <(printf 'unrelated upstream file\n') "$SHARED_SKILLS/to-spec/agents/openai.yaml"
+for skill in to-spec to-tickets setup-matt-pocock-skills; do
+  test -L "$TARGET/skills/$skill"
+  test "$(cd "$TARGET/skills/$skill" && pwd -P)" = "$(cd "$SHARED_SKILLS/$skill" && pwd -P)"
+done
+python3 "$REPO_DIR/scripts/skill-adaptations.py" check --store "$SHARED_SKILLS" >/dev/null
+
+DRIFT_HOME="$TEST_HOME/skill-drift"
+mkdir -p "$DRIFT_HOME/.agents/skills"
+cp -R "$REPO_DIR/skill-adaptations/upstream/." "$DRIFT_HOME/.agents/skills/"
+printf '\nNew upstream paragraph.\n' >> "$DRIFT_HOME/.agents/skills/to-tickets/SKILL.md"
+cp -R "$DRIFT_HOME/.agents/skills" "$DRIFT_HOME/skills-before"
+if HOME="$DRIFT_HOME" \
+  PI_AGENT_DIR="$DRIFT_HOME/.pi/agent" \
+  PATH="$NETWORK_GUARD_BIN:$PATH" \
+  INSTALL_PI_PACKAGES=false \
+  INSTALL_CONFIG_DEPENDENCIES=false \
+  RESTORE_MANAGED_SKILLS=false \
+  bash "$REPO_DIR/setup.sh" >"$DRIFT_HOME/output" 2>&1; then
+  echo "setup unexpectedly accepted upstream skill drift" >&2
+  exit 1
+fi
+grep -q "to-tickets/SKILL.md matches neither the supported upstream" "$DRIFT_HOME/output"
+diff -r "$DRIFT_HOME/skills-before" "$DRIFT_HOME/.agents/skills"
 
 FAKE_BIN="$TEST_HOME/bin"
 mkdir -p "$FAKE_BIN"
@@ -260,7 +297,7 @@ done
 for directory in templates themes oxlint; do
   cp -R "$SYNC_REPO/$directory" "$LIVE_AGENT/$directory"
 done
-for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   cp "$SYNC_REPO/agents/$agent.md" "$LIVE_AGENT/agents/$agent.md"
 done
 for skill in bro msw cmux; do
@@ -292,7 +329,7 @@ printf 'live script\n' > "$LIVE_AGENT/scripts/live-script"
 for directory in templates themes oxlint; do
   printf 'live %s\n' "$directory" > "$LIVE_AGENT/$directory/live-sync-marker"
 done
-for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   printf '\nLive agent marker: %s.\n' "$agent" >> "$LIVE_AGENT/agents/$agent.md"
 done
 for skill in bro msw cmux; do
@@ -344,6 +381,8 @@ cp "$LIVE_AGENT/settings.json" "$LIVE_SETTINGS_BEFORE"
 cp "$LIVE_AGENT/agents/worker.md" "$LIVE_WORKER_BEFORE"
 bash "$SYNC_REPO/scripts/sync-from-live.sh" "$LIVE_AGENT" >/dev/null
 cmp "$METADATA_BEFORE" "$SYNC_REPO/skills/managed-metadata.json"
+diff -r "$REPO_DIR/skill-adaptations" "$SYNC_REPO/skill-adaptations"
+test ! -e "$SYNC_REPO/agents/forge.md"
 cmp "$LIVE_MODELS_BEFORE" "$LIVE_AGENT/models.json"
 cmp "$LIVE_SETTINGS_BEFORE" "$LIVE_AGENT/settings.json"
 cmp "$LIVE_WORKER_BEFORE" "$LIVE_AGENT/agents/worker.md"
@@ -355,7 +394,7 @@ for directory in templates themes oxlint; do
   cmp "$LIVE_AGENT/$directory/live-sync-marker" "$SYNC_REPO/$directory/live-sync-marker"
 done
 cmp "$LIVE_AGENT/scripts/live-script" "$SYNC_REPO/agent-scripts/live-script"
-for agent in architect cleaner design-builder design forge github hardener researcher reviewer scout worker; do
+for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   grep -q "Live agent marker: $agent" "$SYNC_REPO/agents/$agent.md"
 done
 for skill in bro msw cmux; do

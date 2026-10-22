@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "purpose": "Canonical specifications are repository files; delivery tickets are GitHub issues. These files adapt shared upstream skills in ~/.agents/skills to that policy.",
+  "skills": {
+    "to-spec": {
+      "source": "mattpocock/skills",
+      "skillPath": "skills/engineering/to-spec/SKILL.md",
+      "upstreamSkillFolderHash": "136b9651747cfccbfbb7c50a6b0dfb757e7547d2",
+      "files": ["SKILL.md"]
+    },
+    "to-tickets": {
+      "source": "mattpocock/skills",
+      "skillPath": "skills/engineering/to-tickets/SKILL.md",
+      "upstreamSkillFolderHash": "b32c94e5a51c24ee9c41fcb7fe9ea9fff9af6369",
+      "files": ["SKILL.md"],
+      "priorAdapted": ["SKILL.md"]
+    },
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "upstreamSkillFolderHash": "b1568cde855a189b16e5d7dd8a0fa4c3f156bc2e",
+      "files": ["SKILL.md", "issue-tracker-github.md"]
+    }
+  }
+}

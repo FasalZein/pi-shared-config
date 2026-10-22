@@ -3,6 +3,7 @@
  *
  * The calculation matches the previously working extension: output tokens
  * divided by model-response time, excluding tool execution after a tool call.
+ * The average covers only the current model: a model switch starts a new one.
  */
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -19,6 +20,10 @@ export function averageTokenRate(outputTokens: number, elapsedMs: number): numbe
 }
 
 type ReadyMessage = { protocol?: number };
+type ModelRef = { provider: string; id: string };
+
+const sameModel = (a: ModelRef | undefined, b: ModelRef | undefined) =>
+  a?.provider === b?.provider && a?.id === b?.id;
 
 export default function (pi: ExtensionAPI) {
   let totalOutputTokens = 0;
@@ -65,6 +70,13 @@ export default function (pi: ExtensionAPI) {
     publish();
   });
 
+  pi.on("model_select", (event) => {
+    if (sameModel(event.model, event.previousModel)) return;
+    // Also drops a turn in flight: its tokens belong to the previous model.
+    reset();
+    publish();
+  });
+
   pi.on("turn_start", (event) => {
     turnStartMs = event.timestamp ?? Date.now();
     turnStreamEndMs = undefined;
@@ -78,14 +90,14 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("turn_end", (event) => {
     const message = event.message as AssistantMessage | undefined;
-    if (!message || message.role !== "assistant") {
+    if (!message || message.role !== "assistant" || turnStartMs === undefined) {
       turnStartMs = undefined;
       turnStreamEndMs = undefined;
       return;
     }
 
     const endMs = turnStreamEndMs ?? Date.now();
-    const elapsedMs = Math.max(1, endMs - (turnStartMs ?? endMs));
+    const elapsedMs = Math.max(1, endMs - turnStartMs);
     const outputTokens = message.usage?.output ?? 0;
 
     if (outputTokens > 0) {

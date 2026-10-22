@@ -10,7 +10,7 @@
 # hashed lock file, installs from it, and writes the marker.json that
 # ensureVerifierRuntime() looks for so pi reuses the venv instead of rebuilding it.
 #
-# Re-run this if a forge launch reports the verifier runtime is missing.
+# Re-run this if an llm-as-a-verifier launch reports the verifier runtime is missing.
 set -euo pipefail
 
 VERSION="${LLM_VERIFIER_VERSION:-0.2.0}"

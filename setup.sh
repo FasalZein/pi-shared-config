@@ -88,6 +88,8 @@ for directory in agents docs templates themes oxlint; do
   copy_dir_contents "$SCRIPT_DIR/$directory" "$PI_AGENT_DIR/$directory"
 done
 copy_dir_contents "$SCRIPT_DIR/agent-scripts" "$PI_AGENT_DIR/scripts"
+# The agent copy is additive, so remove retired roles that an older restore installed.
+rm -f "$PI_AGENT_DIR/agents/forge.md"
 
 echo "==> Replacing local extensions with the retained portable files"
 if [[ -d "$PI_AGENT_DIR/extensions" ]]; then
@@ -116,6 +118,8 @@ if [[ "$RESTORE_MANAGED_SKILLS" == "true" ]]; then
 else
   echo "    skipped managed skill download"
 fi
+echo "==> Applying local skill adaptations to the shared skill store"
+python3 "$SCRIPT_DIR/scripts/skill-adaptations.py" apply --store "$HOME/.agents/skills"
 copy_file "$SCRIPT_DIR/skills/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
 for skill in bro msw cmux; do
   copy_dir_contents "$SCRIPT_DIR/skills/$skill" "$PI_AGENT_DIR/skills/$skill"

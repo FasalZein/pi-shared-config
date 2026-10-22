@@ -12,6 +12,8 @@ New or fuzzy work: clarify -> PRD/spec -> slice -> implement each slice with ver
 
 Which agent fires when and context habits: `~/.pi/agent/docs/workflow.md`.
 
+- Each project's `docs/agents/issue-tracker.md` (written by `/setup-matt-pocock-skills`) names its specification location and ticket tracker. Canonical specifications are repository files (default `docs/specs/<name>.md`); `to-spec` writes or updates them and never publishes a spec issue. Delivery tickets are GitHub issues via `gh`; `to-tickets` publishes one per ticket in dependency order, linked to the spec path. Linear and wiki archives are read-only. External writes need explicit authorization.
+
 ## Think Before Coding
 
 Surface confusion, assumptions, and trade-offs. State assumptions explicitly; name the simpler approach when you see one; push back when warranted.

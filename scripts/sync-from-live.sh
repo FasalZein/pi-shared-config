@@ -20,7 +20,7 @@ ROOT_FILES=(
   oxlint.config.ts
 )
 SYNC_DIRS=(templates themes oxlint)
-LIVE_AGENTS=(architect cleaner design-builder design forge github hardener researcher reviewer scout worker)
+LIVE_AGENTS=(architect cleaner design-builder design github hardener researcher reviewer scout worker)
 EXCLUDES=(
   '.DS_Store'
   'auth.json'
