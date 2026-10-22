@@ -89,7 +89,7 @@ done
 copy_dir_contents "$SCRIPT_DIR/agent-scripts" "$PI_AGENT_DIR/scripts"
 # Worktree tools. The copy is additive, so other tools in this directory stay.
 copy_dir_contents "$SCRIPT_DIR/bin" "$PI_AGENT_DIR/bin"
-chmod +x "$PI_AGENT_DIR/bin/wt" "$PI_AGENT_DIR/bin/worktrees-landed" "$PI_AGENT_DIR/bin/worktrees-idle"
+chmod +x "$PI_AGENT_DIR/bin/wt" "$PI_AGENT_DIR/bin/worktrees-landed" "$PI_AGENT_DIR/bin/worktrees-idle" "$PI_AGENT_DIR/bin/ralph-lane"
 # The agent copy is additive, so remove retired roles that an older restore installed.
 rm -f "$PI_AGENT_DIR/agents/forge.md"
 

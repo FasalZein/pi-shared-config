@@ -48,6 +48,10 @@
       "purpose": "Report or stop idle worktree devenv services (needs git)"
     },
     {
+      "path": "bin/ralph-lane",
+      "purpose": "Set up a Ralph lane (pi-ralph-loop) for a decided ticket frontier; needs wt, git, jq, and heavy for its gates"
+    },
+    {
       "path": "bin/lib/worktree-procs.sh",
       "purpose": "Shared process helpers for the worktree tools"
     }

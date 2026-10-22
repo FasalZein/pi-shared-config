@@ -22,7 +22,7 @@ ROOT_FILES=(
 SYNC_DIRS=(templates themes oxlint)
 LIVE_AGENTS=(architect cleaner design-builder design github hardener researcher reviewer scout worker)
 # Worktree tools that setup.sh installs into ~/.pi/agent/bin.
-BIN_FILES=(wt worktrees-landed worktrees-idle lib/worktree-procs.sh)
+BIN_FILES=(wt worktrees-landed worktrees-idle ralph-lane lib/worktree-procs.sh)
 EXCLUDES=(
   '.DS_Store'
   'auth.json'

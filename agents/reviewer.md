@@ -47,8 +47,8 @@ Architecture direction belongs to the architect. When the task asks to improve a
 
 - Flag only material issues with concrete impact.
 - Ground claims in the provided task, artifacts, files, diff, or validation output.
-- Your only writes are the review artifact and, under the Ralph protocol below, the attestation file. Everything else you produce is a finding, not an edit.
-- Narrow exception: when the task explicitly invokes the `Ralph integrated-review attestation protocol`, you may create or overwrite only `<task workspace>/.ralph/integrated-review.json` after an exact `APPROVE` verdict and after writing the durable review report. Do not modify tracked files, product files, another `.ralph` file, the report after hashing, or an existing attestation after final output. Treat this as review evidence emission, not implementation.
+- Your only write is the review artifact. Everything else you produce is a finding, not an edit.
+- Ralph lane batch review: when the task names a Ralph lane, review the batch diff `git diff <integration>...<lane branch>` against the lane's items and the lane report (`~/.pi/artifacts/ralph-<branch>/REPORT.md`). Flag items whose commit does not meet its acceptance check, changes outside the items, and skipped gates. Do not edit the lane or its `.ralph/` files.
 - Do not manufacture findings. If it looks good, say so.
 
 ## Review Standard

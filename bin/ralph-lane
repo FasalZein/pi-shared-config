@@ -1,0 +1,149 @@
+#!/bin/bash
+# ralph-lane: set up a Ralph lane (pi-ralph-loop) for a decided, mechanical
+# ticket frontier, then print the pi commands that start the loop.
+# Template: ~/.pi/agent/templates/ralph-lane-template.md
+#
+# Usage:
+#   ralph-lane <bundle.md> [repo]
+#
+# Steps:
+#   1. Check the bundle: branch starts with an issue number, every item has a
+#      check, no item is pre-checked, every gate runs through heavy.
+#   2. Refuse when the integration branch tracks files under .ralph/.
+#   3. Create the lane with wt new <branch> [repo].
+#   4. Add /.ralph/ to the repo's info/exclude (no repo file changes).
+#   5. Write .ralph/{prompt.md,items.json,plan.md,progress.md} in the lane.
+#   6. Print the pi commands. max-iterations = items + retries; retries come
+#      from "- retries: N" in the bundle, default one per item.
+# It does not start pi.
+set -euo pipefail
+here=$(dirname "$0")
+
+usage() { sed -n '2,/^set -euo/{/^set -euo/d;s/^# \{0,1\}//;p;}' "$0"; }
+die() { echo "ralph-lane: $*" >&2; exit 1; }
+
+case "${1:-}" in -h|--help|help) usage; exit 0;; esac
+[ $# -ge 1 ] && [ $# -le 2 ] || { usage >&2; exit 2; }
+bundle=$1; repo=${2:-.}
+[ -f "$bundle" ] || die "no bundle file: $bundle"
+bundle=$(cd "$(dirname "$bundle")" && pwd)/$(basename "$bundle")
+command -v jq >/dev/null || die "jq is required"
+
+# body: the bundle without HTML comments (the template's usage notes).
+body=$(awk '
+  /<!--/ { skip = 1 }
+  !skip { print }
+  /-->/ { skip = 0 }
+' "$bundle")
+# section <name>: the list lines ("- ...") under "## <name>".
+section() {
+  printf '%s\n' "$body" | awk -v want="## $1" '
+    /^## / { in_s = ($0 == want); next }
+    in_s && /^- / { print }
+  '
+}
+
+lane=$(section Lane)
+branch=$(printf '%s\n' "$lane" | sed -nE 's/^- branch:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' | head -n 1)
+retries_line=$(printf '%s\n' "$lane" | sed -nE 's/^- retries:[[:space:]]*(.*)$/\1/p' | head -n 1)
+[ -n "$branch" ] || die "the bundle has no '- branch: <issue>-<slug>' line under '## Lane'"
+# Same leading-issue rule as wt (optional type prefix, then digits), plus a slug.
+printf '%s\n' "$branch" | grep -Eq '^([A-Za-z]+/)?[0-9]+-[A-Za-z0-9]' \
+  || die "branch '$branch' must start with an issue number and a slug (for example 123-epic-slug), so wt new can refuse a duplicate lane"
+git check-ref-format --branch "$branch" >/dev/null 2>&1 || die "invalid branch name: $branch"
+
+items=$(section Items)
+if printf '%s\n' "$items" | grep -Eq '^- \[[xX]\]'; then
+  die "the bundle has checked items; a lane starts with every item unchecked"
+fi
+unchecked=$(printf '%s\n' "$items" | grep -E '^- \[ \] ' || true)
+[ -n "$unchecked" ] || die "the bundle has no '- [ ] <item> | check: <check>' lines under '## Items'"
+count=$(printf '%s\n' "$unchecked" | wc -l | tr -d ' ')
+if missing=$(printf '%s\n' "$unchecked" | grep -Ev '^- \[ \] .+ \| check: .+'); then
+  die "items without '| check: <acceptance check>':
+$missing"
+fi
+
+if [ -z "$retries_line" ]; then
+  retries=$count; retries_src="default: 1 per item"
+else
+  printf '%s\n' "$retries_line" | grep -Eq '^[0-9]+$' || die "'- retries:' must be a whole number, got: $retries_line"
+  retries=$retries_line; retries_src="stated in the bundle"
+fi
+max=$((count + retries))
+
+gates=$(section Gates)
+gates_json=$(printf '%s\n' "$gates" | sed -nE 's/^- ([^:]+):[[:space:]]*(.+)$/\1\t\2/p' \
+  | jq -R -s 'split("\n") | map(select(length > 0) | split("\t") | {name: .[0], command: .[1]})')
+if bad=$(printf '%s\n' "$gates_json" | jq -r '.[] | select(.command | startswith("heavy ") | not) | "\(.name): \(.command)"' | grep .); then
+  die "gates must run through heavy (heavy -- <command>):
+$bad"
+fi
+
+# Refuse before creating anything when .ralph/ is tracked: the launcher's
+# bundle files would show as changes and could be committed or conflict.
+main=$(git -C "$repo" worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10); exit}') || true
+[ -n "$main" ] || die "not a git repo: $repo"
+integ=$(git -C "$main" symbolic-ref --quiet --short HEAD) || die "the main checkout $main is detached"
+if [ -n "$(git -C "$main" ls-tree -r --name-only "$integ" -- .ralph)" ]; then
+  die "$integ tracks files under .ralph/; untrack them first (git rm -r --cached .ralph) so lane bundles stay out of commits"
+fi
+
+out=$("$here/wt" new "$branch" "$repo") || die "wt new $branch failed: $out"
+path=$(printf '%s\n' "$out" | tail -n 1)
+[ -d "$path" ] || die "wt new did not print a worktree path: $out"
+
+exclude=$(git -C "$path" rev-parse --path-format=absolute --git-path info/exclude)
+mkdir -p "$(dirname "$exclude")"
+grep -qxF '/.ralph/' "$exclude" 2>/dev/null || echo '/.ralph/' >> "$exclude"
+
+report="$HOME/.pi/artifacts/ralph-${branch//\//-}/REPORT.md"
+mkdir -p "$path/.ralph"
+{
+  printf '%s\n' "$body"
+  cat <<EOF
+
+## Lane facts
+- Lane path: $path
+- Lane branch: $branch
+- Integration branch: $integ
+- Items: $count. State: .ralph/items.json. Progress: .ralph/progress.md.
+- max-iterations: $max = $count items + $retries retries ($retries_src).
+- Report path: $report
+EOF
+} > "$path/.ralph/prompt.md"
+
+printf '%s\n' "$unchecked" | sed -E 's/^- \[ \] //' \
+  | jq -R -s --argjson gates "$gates_json" '{
+      version: 1,
+      items: (split("\n") | map(select(length > 0)
+        | capture("^(?<d>.+?) \\| check: (?<c>.+)$")
+        | {category: "ticket", description: .d, steps: ["Acceptance check: " + .c],
+           passes: false, regression_notes: ""})),
+      runtime_contract: {
+        verification_gates: $gates,
+        require_progress_append: true,
+        require_one_item_per_iteration: true,
+        require_commit: true
+      }
+    }' > "$path/.ralph/items.json"
+
+cat > "$path/.ralph/plan.md" <<EOF
+# Ralph lane plan
+Source bundle: $bundle
+Lane: $branch at $path (from $integ)
+Items: $count; max-iterations $max = $count items + $retries retries ($retries_src).
+The instructions are in .ralph/prompt.md; the item state is .ralph/items.json.
+EOF
+printf '# Progress: %s\n' "$branch" > "$path/.ralph/progress.md"
+
+cat <<EOF
+# Ralph lane ready: $branch
+# Lane path: $path
+# Report: $report
+# max-iterations $max = $count items + $retries retries ($retries_src)
+# Start pi in a visible pane (ask_user is blocked while the loop runs):
+cd '$path' && RALPH_BLOCKED_TOOLS=ask_user pi --name 'ralph $branch'
+# Then send this line in that pi session:
+/ralph-loop "@.ralph/prompt.md" --max-iterations=$max
+EOF

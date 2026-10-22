@@ -35,7 +35,7 @@ The `eko24ive-pi-ask.json` file configures `pi-ask`; it is not an extension.
 
 ## Worktree tools
 
-`bin/` holds `wt`, `worktrees-landed`, `worktrees-idle`, and `lib/worktree-procs.sh`. Setup copies them to `~/.pi/agent/bin` and keeps other files in that directory. They need `git`. `gh` and `devenv` are optional: `wt` uses `gh` to check merged pull requests and `devenv` to stop the services of a finished worktree. Run `wt --help` for the commands.
+`bin/` holds `wt`, `worktrees-landed`, `worktrees-idle`, `ralph-lane`, and `lib/worktree-procs.sh`. Setup copies them to `~/.pi/agent/bin` and keeps other files in that directory. They need `git`. `gh` and `devenv` are optional: `wt` uses `gh` to check merged pull requests and `devenv` to stop the services of a finished worktree. Run `wt --help` for the commands. `ralph-lane <bundle> <repo>` sets up a Ralph lane from `templates/ralph-lane-template.md`; it needs `jq` and `wt`, and the template requires every gate to run through `heavy`, which this repository does not ship. The `pi-ralph-loop` package runs the lane.
 
 Pi puts `~/.pi/agent/bin` on `PATH` for the `bash` tool of every agent session, so agents find the tools without setup. A normal terminal does not have it. To use the tools there, add this line to your shell profile:
 

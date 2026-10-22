@@ -159,11 +159,11 @@ for path in (ROOT / "extensions" / "env-wrap").glob("*.ts"):
         fail(f"{path.relative_to(ROOT)} must not depend on shell-guard")
 
 # The worktree tools that setup.sh installs into ~/.pi/agent/bin.
-BIN_FILES = ["wt", "worktrees-landed", "worktrees-idle", "lib/worktree-procs.sh"]
+BIN_FILES = ["wt", "worktrees-landed", "worktrees-idle", "ralph-lane", "lib/worktree-procs.sh"]
 bin_entries = {str(path.relative_to(ROOT / "bin")) for path in (ROOT / "bin").rglob("*") if path.is_file()}
 if bin_entries != set(BIN_FILES):
     fail(f"bin has unexpected entries: {sorted(bin_entries)}")
-for name in BIN_FILES[:3]:
+for name in BIN_FILES[:-1]:
     if not os.access(ROOT / "bin" / name, os.X_OK):
         fail(f"bin/{name} must be executable")
 

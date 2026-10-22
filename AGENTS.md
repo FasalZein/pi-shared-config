@@ -19,6 +19,7 @@ New or fuzzy work: clarify -> spec -> slice -> implement each slice with verific
 - At a phase boundary (shaping, building, reviewing) choose deliberately: continue, `/clear`, or `/compact`.
 - Agents that edit the working tree (for example `cleaner` and `hardener`) run one at a time on the same slice.
 - `cleaner` and `hardener` are gate stages only (CRAP gate; coverage and mutation landing receipt). Send implementation to `worker` and reviews to `reviewer`; never brief a gate agent to replace its default stage.
+- A decided, mechanical ticket frontier (no owner decisions left) goes to a Ralph lane: fill ~/.pi/agent/templates/ralph-lane-template.md, run `ralph-lane <bundle> <repo>`, start the printed pi commands in a visible pane. After COMPLETE: `reviewer` on the batch diff, fixes by `worker` in the same lane, then `wt land`. After STOP: read the blocker report and decide.
 
 ## Scope and design
 

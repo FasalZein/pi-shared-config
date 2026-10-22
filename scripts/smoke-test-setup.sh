@@ -72,7 +72,7 @@ test -f "$TARGET/extensions/env-wrap/core.ts"
 test -f "$TARGET/extensions/env-wrap/shell-segments.ts"
 test ! -e "$TARGET/extensions/shell-guard.ts"
 test "$(find "$TARGET/extensions" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = "4"
-for tool in wt worktrees-landed worktrees-idle; do
+for tool in wt worktrees-landed worktrees-idle ralph-lane; do
   test -x "$TARGET/bin/$tool"
 done
 test -f "$TARGET/bin/lib/worktree-procs.sh"
@@ -377,7 +377,7 @@ cp "$SYNC_REPO/extensions/env-wrap/index.ts" "$LIVE_AGENT/extensions/env-wrap/in
 # Live core.ts imports the parser from shell-guard.ts; the sync must redirect it to shell-segments.ts.
 sed 's#"./shell-segments.ts"#"../shell-guard.ts"#' "$SYNC_REPO/extensions/env-wrap/core.ts" > "$LIVE_AGENT/extensions/env-wrap/core.ts"
 { printf 'export const guardMarker = true;\n\n'; sed 1,3d "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"; printf '\nexport function blockReason() {\n\treturn "host policy";\n}\n'; } > "$LIVE_AGENT/extensions/shell-guard.ts"
-for tool in wt worktrees-landed worktrees-idle lib/worktree-procs.sh; do
+for tool in wt worktrees-landed worktrees-idle ralph-lane lib/worktree-procs.sh; do
   { [ "$tool" = wt ] && printf '# Approved proposal: ~/.pi/artifacts/parent/x.md\n'; cat "$SYNC_REPO/bin/$tool"; } > "$LIVE_AGENT/bin/$tool"
   chmod "$(stat -f %Lp "$SYNC_REPO/bin/$tool")" "$LIVE_AGENT/bin/$tool"
 done
@@ -476,7 +476,7 @@ grep -q 'from "./shell-segments.ts"' "$SYNC_REPO/extensions/env-wrap/core.ts"
 grep -q 'export function parseSegments' "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"
 ! grep -q 'guardMarker\|blockReason' "$SYNC_REPO/extensions/env-wrap/shell-segments.ts"
 test ! -e "$SYNC_REPO/extensions/shell-guard.ts"
-for tool in wt worktrees-landed worktrees-idle lib/worktree-procs.sh; do
+for tool in wt worktrees-landed worktrees-idle ralph-lane lib/worktree-procs.sh; do
   cmp <(grep -v '^# Approved proposal' "$LIVE_AGENT/bin/$tool") "$SYNC_REPO/bin/$tool"
   test "$(stat -f %Lp "$LIVE_AGENT/bin/$tool")" = "$(stat -f %Lp "$SYNC_REPO/bin/$tool")"
 done
