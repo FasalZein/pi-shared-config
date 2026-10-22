@@ -171,10 +171,14 @@ fi
 grep -q "Error: npx is required to restore managed skills" "$NO_NPX_HOME/output"
 
 NORMALIZE_ROOT="$TEST_HOME/normalize"
-mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents"
+mkdir -p "$NORMALIZE_ROOT/scripts" "$NORMALIZE_ROOT/agents" "$NORMALIZE_ROOT/skills/vendored"
 cp "$REPO_DIR/scripts/normalize-config.py" "$NORMALIZE_ROOT/scripts/normalize-config.py"
 cp "$REPO_DIR/scripts/model_policy.py" "$NORMALIZE_ROOT/scripts/model_policy.py"
 cp "$REPO_DIR/extension-manifest.json" "$NORMALIZE_ROOT/extension-manifest.json"
+cat > "$NORMALIZE_ROOT/skills/.skill-lock.json" <<'JSON'
+{"version":3,"skills":{"design-craft":{"source":"/local/design-skills","sourceType":"local","sourceUrl":"/local/design-skills","skillFolderHash":"h1"},"design-qa":{"source":"FasalZein/design-skills","sourceType":"github","sourceUrl":"https://github.com/FasalZein/design-skills.git","skillPath":"design-qa/SKILL.md","skillFolderHash":"h2"},"tdd":{"source":"mattpocock/skills","sourceType":"github","skillFolderHash":"h3"}}}
+JSON
+echo '{"version":1,"links":{"find-standards":"../x"}}' > "$NORMALIZE_ROOT/skills/symlinks.json"
 cat > "$NORMALIZE_ROOT/settings.json" <<'JSON'
 {"enabledModels":["anthropic/claude-opus-5","grok-cli/grok-4.7","explabs/claude-opus-5.5","grok-cli/claude-x","grok-cli/","cursor/grok-code-fast-1"],"packages":["rejected"],"extensions":["rejected"],"lsp":{}}
 JSON
@@ -191,6 +195,15 @@ cat > "$NORMALIZE_ROOT/agents/alias.md" <<'EOF_AGENT'
 ---
 model: anthropic/claude-opus-5
 extensions: npm:eko24ive/pi-ask@old
+skills: design-craft, design-qa=auto, impeccable, tdd, vendored, find-standards
+inject-skills: impeccable
+---
+Run /Users/tothemoon/.pi/agent/skills/exa/scripts/exa.sh in the pane (herdr on this Mac).
+EOF_AGENT
+cat > "$NORMALIZE_ROOT/agents/none.md" <<'EOF_AGENT'
+---
+model: anthropic/claude-opus-5
+skills: none
 ---
 EOF_AGENT
 cat > "$NORMALIZE_ROOT/agents/scout.md" <<'EOF_AGENT'
@@ -237,6 +250,18 @@ agent = (root / "agents/scout.md").read_text()
 alias = (root / "agents/alias.md").read_text()
 worker = (root / "agents/worker.md").read_text()
 assert "npm:@eko24ive/pi-ask" in alias
+assert "skills: design-craft, design-qa=auto, tdd, vendored, find-standards\n" in alias
+assert "inject-skills: \n" in alias
+assert "Run ~/.pi/agent/skills/exa/scripts/exa.sh in the pane." in alias
+assert "Users/tothemoon" not in alias
+assert "skills: none\n" in (root / "agents/none.md").read_text()
+lock = json.loads((root / "skills/.skill-lock.json").read_text())["skills"]
+assert lock["design-craft"] == {
+    "source": "FasalZein/design-skills", "sourceType": "github",
+    "sourceUrl": "https://github.com/FasalZein/design-skills.git",
+    "skillFolderHash": "h1", "skillPath": "design-craft/SKILL.md",
+}
+assert lock["design-qa"]["skillPath"] == "design-qa/SKILL.md"
 assert "model: openai-codex/gpt-5.6-sol" in worker
 assert "openai-codex/gpt-5.6-terra:high" in worker
 assert "anthropic/claude-opus-5:medium" in worker
@@ -337,6 +362,7 @@ for skill in bro msw cmux; do
 done
 python3 - "$LIVE_AGENT/settings.json" "$LIVE_AGENT/models.json" "$LIVE_AGENT/agents/scout.md" <<'PY'
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -353,9 +379,10 @@ models["providers"]["grok-cli"]["modelOverrides"]["grok-live-sync"] = {"name": "
 models["providers"]["grok-cli"]["modelOverrides"]["claude-x"] = {"name": "bad"}
 models["providers"]["rejected"] = {"models": [{"id": "grok-4"}]}
 models_path.write_text(json.dumps(models, indent=2) + "\n")
-scout = scout_path.read_text()
-if "model: grok-cli/grok-4.7" not in scout or "\nallowed-models:" not in scout:
-    raise SystemExit("live scout fixture lost its grok-cli route before sync")
+# Pin the fixture to a grok-cli route; the live scout route changes with the live setup.
+scout = re.sub(r"^model:.*$", "model: grok-cli/grok-4.7", scout_path.read_text(), count=1, flags=re.MULTILINE)
+if "\nallowed-models:" not in scout:
+    raise SystemExit("live scout fixture has no allowed-models line before sync")
 scout_path.write_text(
     scout.replace("\nallowed-models:", "\nallowed-models: cursor/grok-4, grok-cli/grok-4.7:high,", 1)
 )

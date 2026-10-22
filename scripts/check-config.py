@@ -29,7 +29,7 @@ FORBIDDEN_TOOLS = {"lsp", "ast_grep_search", "fold"}
 MATT_POCOCK_SKILLS = {
     "ask-matt", "code-review", "codebase-design", "diagnosing-bugs", "domain-modeling",
     "grill-me", "grill-with-docs", "grilling", "handoff", "implement",
-    "improve-codebase-architecture", "research", "resolving-merge-conflicts",
+    "improve-codebase-architecture", "research",
     "setup-matt-pocock-skills", "tdd", "teach", "to-questionnaire", "to-spec",
     "to-tickets", "triage", "wait-what", "wayfinder", "wizard", "writing-for-agents",
 }
@@ -37,7 +37,7 @@ RESEARCH_SKILLS = {
     "find-standards", "why", "context7", "exa", "firecrawl", "tinyfish",
     "convert-documents-to-markdown", "technical-writing",
 }
-EXPECTED_UNLOCKED_AGENT_SKILLS = {"design-md", "find-standards", "ponytail-review"}
+EXPECTED_UNLOCKED_AGENT_SKILLS = {"build-design-library", "design-md", "find-standards", "ponytail-review"}
 errors: list[str] = []
 
 
@@ -138,6 +138,7 @@ for path in sorted(agent_dir.glob("*.md")):
                 for value in match.group(1).split(",")
                 if value.strip()
             )
+referenced_skills.discard("none")  # "skills: none" means no skills
 missing_agent_skills = referenced_skills - available_skills
 if missing_agent_skills:
     fail(f"agent skills are unavailable: {sorted(missing_agent_skills)}")

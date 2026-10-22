@@ -11,15 +11,16 @@
     "to-tickets": {
       "source": "mattpocock/skills",
       "skillPath": "skills/engineering/to-tickets/SKILL.md",
-      "upstreamSkillFolderHash": "b32c94e5a51c24ee9c41fcb7fe9ea9fff9af6369",
+      "upstreamSkillFolderHash": "2dee20ad722a31c04ededf9f2d83842473573045",
       "files": ["SKILL.md"],
       "priorAdapted": ["SKILL.md"]
     },
     "setup-matt-pocock-skills": {
       "source": "mattpocock/skills",
       "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
-      "upstreamSkillFolderHash": "b1568cde855a189b16e5d7dd8a0fa4c3f156bc2e",
-      "files": ["SKILL.md", "issue-tracker-github.md"]
+      "upstreamSkillFolderHash": "aafaabf96fa3945d8a4069317a7a6d36b7169670",
+      "files": ["SKILL.md", "issue-tracker-github.md"],
+      "priorAdapted": ["SKILL.md", "issue-tracker-github.md"]
     }
   }
 }

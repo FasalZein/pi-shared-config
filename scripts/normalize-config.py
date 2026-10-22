@@ -24,6 +24,11 @@ PACKAGE_BY_NAME = {
     "pi-grok-cli": PACKAGES[8],
 }
 REMOVED_TOOLS = {"lsp", "ast_grep_search", "fold"}
+# Skills that the live setup installs from a local checkout. Record the portable GitHub origin instead.
+PORTABLE_SKILL_SOURCES = {
+    "design-craft": "FasalZein/design-skills",
+    "design-qa": "FasalZein/design-skills",
+}
 
 
 def canonical_extension(value: str) -> str | None:
@@ -50,6 +55,20 @@ def normalize_settings() -> None:
     data["packages"] = PACKAGES
     data["extensions"] = []
     data.pop("lsp", None)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def normalize_skill_lock() -> None:
+    path = ROOT / "skills" / ".skill-lock.json"
+    data = json.loads(path.read_text())
+    for name, source in PORTABLE_SKILL_SOURCES.items():
+        entry = data["skills"][name]
+        if entry["sourceType"] != "local":
+            continue
+        entry["source"] = source
+        entry["sourceType"] = "github"
+        entry["sourceUrl"] = f"https://github.com/{source}.git"
+        entry["skillPath"] = f"{name}/SKILL.md"
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
@@ -124,9 +143,28 @@ def normalize_model_line(path: Path, line: str) -> str:
     raise SystemExit(f"no Claude, GPT, or grok-cli replacement specified for {path}: {line}")
 
 
+def portable_skills() -> set[str]:
+    """Skills a restored machine has: locked, linked, or vendored in this repository."""
+    lock = json.loads((ROOT / "skills" / ".skill-lock.json").read_text())
+    links = json.loads((ROOT / "skills" / "symlinks.json").read_text())
+    vendored = {path.name for path in (ROOT / "skills").iterdir() if path.is_dir()}
+    return set(lock["skills"]) | set(links["links"]) | vendored
+
+
+def normalize_skills_line(line: str) -> str:
+    """Drop skills that exist only in the live setup (for example impeccable)."""
+    key, value = line.split(":", 1)
+    available = portable_skills()
+    values = [item.strip() for item in value.split(",") if item.strip()]
+    kept = [item for item in values if item == "none" or item.split("=", 1)[0] in available]
+    return f"{key}: " + ", ".join(kept)
+
+
 def normalize_frontmatter_line(path: Path, line: str) -> str:
     if line.startswith("extensions:"):
         return normalize_extensions_line(line)
+    if line.startswith(("skills:", "inject-skills:")):
+        return normalize_skills_line(line)
     if line.startswith("tools:"):
         return normalize_tools_line(line)
     if line.startswith("allowed-models:"):
@@ -155,13 +193,26 @@ def replace_removed_tool_instructions(text: str) -> str:
     return text
 
 
+# Host-specific wording that live agent files carry; the portable copy states it generally.
+HOST_REPLACEMENTS = [
+    ("/Users/tothemoon/", "~/"),
+    (" (herdr on this Mac)", ""),
+]
+
+
+def remove_host_details(text: str) -> str:
+    for old, new in HOST_REPLACEMENTS:
+        text = text.replace(old, new)
+    return text
+
+
 def normalize_agent(path: Path) -> None:
     parts = path.read_text().split("---", 2)
     if len(parts) != 3:
         raise SystemExit(f"missing frontmatter: {path}")
     frontmatter = [normalize_frontmatter_line(path, line) for line in parts[1].splitlines()]
     parts[1] = "\n".join(frontmatter) + "\n"
-    path.write_text(replace_removed_tool_instructions("---".join(parts)))
+    path.write_text(remove_host_details(replace_removed_tool_instructions("---".join(parts))))
 
 
 def normalize_agents() -> None:
@@ -170,5 +221,6 @@ def normalize_agents() -> None:
 
 
 normalize_settings()
+normalize_skill_lock()
 normalize_models()
 normalize_agents()

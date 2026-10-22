@@ -76,8 +76,8 @@ command -v rsync >/dev/null || { echo "rsync is required" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 is required" >&2; exit 1; }
 
 for file in "${ROOT_FILES[@]}"; do
-  if [[ "$file" == "REALTIME-SYSTEM-PROMPT.md" && ! -e "$SOURCE_DIR/$file" ]]; then
-    echo "Live source has no REALTIME-SYSTEM-PROMPT.md; keeping the repository copy." >&2
+  if [[ ( "$file" == "REALTIME-SYSTEM-PROMPT.md" || "$file" == "pi-codex-conversion.json" ) && ! -e "$SOURCE_DIR/$file" ]]; then
+    echo "Live source has no $file; keeping the repository copy." >&2
     continue
   fi
   require_path "$SOURCE_DIR/$file"
@@ -101,7 +101,17 @@ for file in "${ROOT_FILES[@]}"; do
   cp "$SOURCE_DIR/$file" "$REPO_DIR/$file"
 done
 
-cp "$SOURCE_DIR/models.json" "$REPO_DIR/models.json"
+# An extension can supply a retained provider (for example anthropic), so live models.json may omit it.
+# Keep the repository entry for any provider that live models.json does not define.
+python3 - "$SOURCE_DIR/models.json" "$REPO_DIR/models.json" <<'PY'
+import json
+import sys
+
+live = json.load(open(sys.argv[1]))
+repo = json.load(open(sys.argv[2]))
+live["providers"] = {**repo.get("providers", {}), **live.get("providers", {})}
+open(sys.argv[2], "w").write(json.dumps(live, indent=2) + "\n")
+PY
 for directory in "${SYNC_DIRS[@]}"; do
   sync_dir "$SOURCE_DIR/$directory" "$REPO_DIR/$directory"
 done
@@ -130,7 +140,7 @@ target = Path(sys.argv[2])
 links = {
     entry.name: os.readlink(entry)
     for entry in sorted(source.iterdir(), key=lambda path: path.name)
-    if entry.is_symlink() and entry.name not in {"to-prd", "to-slices"}
+    if entry.is_symlink() and entry.name not in {"to-prd", "to-slices", "resolving-merge-conflicts"}
 }
 target.write_text(json.dumps({"version": 1, "links": links}, indent=2) + "\n")
 PY

@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MATT_SKILLS = {
     "ask-matt", "code-review", "codebase-design", "diagnosing-bugs", "domain-modeling",
     "grill-me", "grill-with-docs", "grilling", "handoff", "implement",
-    "improve-codebase-architecture", "research", "resolving-merge-conflicts",
+    "improve-codebase-architecture", "research",
     "setup-matt-pocock-skills", "tdd", "teach", "to-questionnaire", "to-spec",
     "to-tickets", "triage", "wait-what", "wayfinder", "wizard", "writing-for-agents",
 }
