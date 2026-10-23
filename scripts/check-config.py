@@ -115,7 +115,7 @@ for skill in sorted(MATT_POCOCK_SKILLS & locked_skills):
         fail(f"{skill} does not use the Matt Pocock skill source")
 if not RESEARCH_SKILLS <= available_skills:
     fail(f"research skills are missing: {sorted(RESEARCH_SKILLS - available_skills)}")
-if not {"bro", "cmux", "msw"} <= vendor_skills:
+if not {"bro", "cmux", "msw", "browser-checks"} <= vendor_skills:
     fail("one or more vendored local skills are missing")
 if {"to-prd", "to-slices"} & symlinked_skills:
     fail("retired to-prd or to-slices skill links are present")

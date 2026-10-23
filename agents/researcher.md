@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: External and web research into a sourced brief - technology comparisons, landscape surveys, multi-source answers. Say "focused" for a single-angle answer or "multi-angle" for one pass per sub-question. Codebase questions go to scout.
+description: External research into a sourced brief: comparisons, landscape surveys, multi-source answers. Say focused (one angle) or multi-angle. Codebase questions go to scout.
 model: anthropic/claude-sonnet-5-5
 thinking: medium
 allow-model-override: true

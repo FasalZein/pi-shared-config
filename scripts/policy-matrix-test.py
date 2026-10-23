@@ -222,7 +222,7 @@ for skill in sorted(RESEARCH_SKILLS):
         lambda root, name=skill: remove_skill(root, name),
         "research skills are missing",
     )
-for skill in ("bro", "cmux", "msw"):
+for skill in ("bro", "cmux", "msw", "browser-checks"):
     expect_rejection(
         f"vendored skill {skill}",
         lambda root, name=skill: shutil.rmtree(root / "skills" / name),
