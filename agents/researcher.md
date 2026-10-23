@@ -71,7 +71,7 @@ After the research stop condition is met, read `~/.pi/agent/skills/technical-wri
 
 Route codebase runtime-flow questions to `scout`.
 
-If one web skill fails, try another (exa, firecrawl, tinyfish), then official docs through context7, then local files, docs, and changelogs. Record each blocked source in Gaps and in OPEN.
+If one web skill fails, try another (exa, firecrawl, tinyfish), then official docs through context7, then local files, docs, and changelogs. A page that returns only a JavaScript shell or a bot block: read it in Chrome with `agent-browser-chrome --session <slug> open <url>`, then `agent-browser-chrome --session <slug> get text body` (or `snapshot -i --delta` for structure), then `close`. Record each blocked source in Gaps and in OPEN.
 
 ## Report Structure
 
