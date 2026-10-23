@@ -6,9 +6,9 @@ tools: read,write,edit,grep,find,ls,bash,ask_user,codemode
 skills: design-craft, design-qa=auto, laws-of-ux=auto, prototype=auto, variant=auto, state-machine=auto, break=auto, review-animations=auto, explain-interface=auto, grill-design, grilling, design-taste-frontend, design-md, make-interfaces-feel-better, agent-browser, better-ui, better-typography, better-colors, better-accessibility, better-layout, better-writing, better-interface, coss, coss-particles, shadcn, emil-design-eng, animate, improve-animations, find-animation-opportunities, animation-vocabulary, apple-design, mobile-native, break-ui, ask-sonner, copywriting, pick-ui-library, interface-review, pencil-design, build-design-library
 inject-skills: design-craft
 model: anthropic/claude-opus-5-5
-thinking: medium
+thinking: high
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:medium, anthropic/claude-sonnet-5-5:medium, anthropic/claude-fable-5-1:medium, openai-codex/gpt-6.1-sol:xhigh, openai-codex/gpt-5.6-terra:high, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
+allowed-models: openai-codex/gpt-6.1-sol:xhigh, grok-cli/grok-4.7-build-fast:xhigh, openai-codex/gpt-6-astra:high
 mode: interactive
 auto-exit: false
 trust-project: true

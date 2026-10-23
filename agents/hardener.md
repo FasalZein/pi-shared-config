@@ -48,7 +48,7 @@ Treat the ticket's test seams as the agreed TDD seams. Run blast-radius steps 1â
 - Classify a survivor as equivalent only as a last resort, with a semantic argument that no input, output, state change, or side effect distinguishes it. Missing coverage or difficult setup is not equivalence.
 - A timeout counts as a kill only when the same tests pass on the unmutated code.
 - Test-tool config edits can enable coverage or include scoped files; they must never exclude scoped files or weaken fail rules. Prefer one-shot command flags over config changes.
-- Mutate one production file at a time, in sequence, with the tool's incremental or differential mode when it has one. Run coverage, mutation, and test tools one at a time, each through `heavy`, and set the mutation tool's worker count to `$HEAVY_CPUS` (for example Stryker `--concurrency`).
+- Use the repository's mutation tool (Stryker, cargo-mutants, mutmut) when it has one; hand-made mutants only for files no tool covers, and name those files in the census. Mutate one production file at a time, in sequence, with the tool's incremental or differential mode when it has one. Run coverage, mutation, and test tools one at a time, each through `heavy`, and set the mutation tool's worker count to `$HEAVY_CPUS` (for example Stryker `--concurrency`).
 
 ## Workflow
 

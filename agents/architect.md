@@ -8,7 +8,7 @@ inject-skills: grilling, domain-modeling
 model: anthropic/claude-opus-5-5
 thinking: xhigh
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:xhigh, openai-codex/gpt-6.1-sol:xhigh, anthropic/claude-opus-5-5:high, anthropic/claude-sonnet-5-5:high, grok-cli/grok-4.7:xhigh, anthropic/claude-fable-5-1:high, openai-codex/gpt-6-astra:high, grok-cli/grok-4.7-build-fast:xhigh
+allowed-models: openai-codex/gpt-6.1-sol:xhigh, grok-cli/grok-4.7-build-fast:xhigh, openai-codex/gpt-6-astra:high
 mode: interactive
 auto-exit: false
 trust-project: true
