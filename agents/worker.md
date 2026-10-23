@@ -8,7 +8,7 @@ skills: tdd, principle-prove-it-works, principle-type-system-discipline
 model: anthropic/claude-opus-5-5
 thinking: medium
 allow-model-override: true
-allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-6.1-sol:medium, anthropic/claude-sonnet-5-5:medium, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh
+allowed-models: anthropic/claude-opus-5-5:medium, openai-codex/gpt-6.1-sol:medium, anthropic/claude-sonnet-5-5:medium, grok-cli/grok-4.7:high, grok-cli/grok-4.7-build-fast:xhigh, openai-codex/gpt-6-astra:medium, openai-codex/gpt-6-astra:low
 mode: background
 timeout: 3600
 timeout-warn-threshold: 80%
@@ -65,6 +65,8 @@ Your slice is verified when every behaviour you changed is accounted for by one 
 - the code path run once by hand, with the observed output pasted into your report
 - an explicit line saying why that behaviour has no check
 
+A user-visible slice (UI, route, page, or public API changed) also needs e2e proof before DONE: start the app with the command the repo's AGENTS.md names, drive the changed flow with `agent-browser-chrome`, and save one screenshot per changed state under `$HOME/.pi/artifacts/worker/<slug>/`. Where the repo has Playwright, commit a spec for the flow and run it. Without that proof the slice is PARTIAL, unless the brief says the owner skipped e2e.
+
 Give test and build commands a timeout of their normal runtime plus the heavy wait, below this agent's whole-run `timeout`.
 
 ### 3. Report
@@ -81,6 +83,7 @@ RESULT: DONE | PARTIAL | BLOCKED
 COMMIT: <sha, or "none" and the reason>
 FILES: list of files changed
 SUMMARY: what was implemented + what verification ran.
+E2E: flow steps, screenshot paths, Playwright spec and its run, or "not user-visible" / "skipped by owner".
 OPEN: remaining caveats / why blocked, or "none".
 ARTIFACT: /abs/path  (only if you wrote one; omit otherwise)
 ```

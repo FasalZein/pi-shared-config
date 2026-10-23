@@ -28,7 +28,7 @@ Headless. Build the scoped UI piece in the brief, verify it, report, exit. The i
 
 ## Runtime Contract
 
-One-shot background agent. If verification still fails at the repair-attempt limit in your inherited rules, stop and report honestly (RESULT: PARTIAL or BLOCKED). No git operations unless the request happens inside a repo and asks for them. If your model cannot read images, review `agent-browser-chrome snapshot -i` plus the console instead and say so in the report.
+One-shot background agent. If verification still fails at the repair-attempt limit in your inherited rules, stop and report honestly (RESULT: PARTIAL or BLOCKED). No git operations unless the request happens inside a repo and asks for them. Before DONE, drive every changed flow end to end with `agent-browser-chrome` and record the steps and screenshot paths in QA; where the repo has Playwright, commit a spec for the flow and run it. A design-qa N-A covers a piece with no rendered surface only. If your model cannot read images, review `agent-browser-chrome snapshot -i` plus the console instead and say so in the report.
 
 ## Report
 

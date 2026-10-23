@@ -18,7 +18,9 @@ New or fuzzy work: clarify -> spec -> slice -> implement each slice with verific
 - Decisions live in the spec, the issues, or ADRs, not in chat history. File a decision before moving on.
 - At a phase boundary (shaping, building, reviewing) choose deliberately: continue, `/clear`, or `/compact`.
 - Agents that edit the working tree (for example `cleaner` and `hardener`) run one at a time on the same slice.
-- `cleaner` and `hardener` are gate stages only (CRAP gate; coverage and mutation landing receipt). Send implementation to `worker` and reviews to `reviewer`; never brief a gate agent to replace its default stage.
+- `cleaner` and `hardener` are gate stages only (CRAP gate; coverage and mutation landing receipt). They run once per integration batch, in that order, on the batch diff in a `wt new` worktree from the integration tip, before the integration PR to staging. Skip a batch only on the owner's instruction. Send implementation to `worker` and reviews to `reviewer`; never brief a gate agent to replace its default stage.
+- Landing receipt: after the hardener slice lands with verdict HARDENED, the merging agent sets the `landing-receipt` commit status on the integration head: `gh api repos/<owner>/<repo>/statuses/<sha> -f state=success -f context=landing-receipt -f description='<verdict> <report path>'`. An owner skip uses `description='skipped by owner'`. Where branch protection on staging requires this status, the integration PR cannot merge without it.
+- Split a review over about 2,000 changed lines into one `reviewer` per file group: reviewers above 300k tokens of context ended PARTIAL or BLOCKED in 36% of launches (2026-10 retro).
 - A decided, mechanical ticket frontier (no owner decisions left) goes to a Ralph lane: fill ~/.pi/agent/templates/ralph-lane-template.md, run `ralph-lane <bundle> <repo>`, start the printed pi commands in a visible pane. After COMPLETE: `reviewer` on the batch diff, fixes by `worker` in the same lane, then `wt land`. After STOP: read the blocker report and decide.
 
 ## Scope and design
@@ -48,7 +50,7 @@ Apply this section when adding or changing software behavior or tests.
 
 - Inspect existing tests before adding cases. Extend them where practical; each new case must protect a distinct requirement, boundary, or failure mode. When existing tests cover the change, run them rather than adding redundant cases.
 - Derive expected results from requirements, documented contracts, worked examples, or independent references, not by copying outputs or logic from the implementation under test.
-- Choose the smallest test boundary that can catch the failure. Exercise real component interactions for integration risks; use focused unit tests for isolated logic.
+- Choose the smallest test boundary that can catch the failure. For a user-visible change (UI, route, page, public API), that boundary is the running app: drive the changed flow end to end. Exercise real component interactions for integration risks; use focused unit tests for isolated logic.
 - Assert observable behavior through stable interfaces. Pin styling, colors, internal structure, or interactions only when they are explicit contracts.
 - Prefer real collaborators or faithful fakes; mock external or nondeterministic boundaries when needed. Keep the behavior under test real.
 - Verify applicable boundary, error, retry, partial-state, and recovery paths in proportion to risk.
@@ -75,6 +77,7 @@ Apply this section to tasks that modify software behavior or its verification. R
 
 - Type checks and lints: no LSP tool is installed. Run the checker the project declares through `bash` (its typecheck or lint script, `tsc --noEmit`, `basedpyright`, `cargo check`). Installing a checker the project does not declare is a dependency change.
 - Subagent launches: launch `subagent` and `subagent_resume` inside codemode. A launch there returns at once, also next to other calls in the same script (tested 2026-10-23). Keep that codemode call alone in its message.
+- Browser: use `agent-browser-chrome` for every e2e, QA, screenshot, or headed check, on every command of that session. Plain `agent-browser` runs Lightpanda (no pixels); use it only to read pages.
 - GitHub: `gh` CLI is installed and authenticated. Issues, comments, labels, and PRs go through `gh` in `bash`.
 - Bash calls already run in the devenv env of the worktree's `.envrc` (env-wrap extension). Run commands directly, without `direnv exec` or `devenv shell`. env-wrap allows a linked worktree whose `.envrc` matches the allowed main checkout. When it still reports an `.envrc` as not allowed, report that: the owner approves a repo's `.envrc`. When it reports that an `.envrc` did not load, read the error; fix `devenv.nix` only inside your assigned slice, otherwise report it.
 - Missing CLI tool: run it once with `nix run nixpkgs#<tool> -- <args>`. A tool one repo needs goes into that repo's `devenv.nix`; a tool every repo needs goes into `~/Dev/nix-platform/modules/home.nix` through a worktree slice, and the owner runs `darwin-rebuild switch`. Homebrew, `npm -g`, `cargo install` and `pip install` changes are owner decisions.

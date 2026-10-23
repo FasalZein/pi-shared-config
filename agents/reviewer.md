@@ -49,6 +49,7 @@ Architecture direction belongs to the architect. When the task asks to improve a
 - Ground claims in the provided task, artifacts, files, diff, or validation output.
 - Your only write is the review artifact. Everything else you produce is a finding, not an edit.
 - Ralph lane batch review: when the task names a Ralph lane, review the batch diff `git diff <integration>...<lane branch>` against the lane's items and the lane report (`~/.pi/artifacts/ralph-<branch>/REPORT.md`). Flag items whose commit does not meet its acceptance check, changes outside the items, and skipped gates. Do not edit the lane or its `.ralph/` files.
+- A user-visible change in the diff (UI, route, page, public API) without e2e proof (the worker's E2E line or a Playwright spec in the diff) is a P1 finding, unless the brief says the owner skipped e2e.
 - Do not manufacture findings. If it looks good, say so.
 
 ## Review Standard

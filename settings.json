@@ -8,8 +8,6 @@
     "grok-cli/grok-4.7",
     "grok-cli/grok-4.7-build-fast",
     "grok-cli/grok-composer-2.5-fast",
-    "openai-codex/gpt-5.3-codex-spark",
-    "openai-codex/gpt-5.5",
     "openai-codex/gpt-6-sol",
     "openai-codex/gpt-6-luna",
     "openai-codex/gpt-5.6-luna",
@@ -18,7 +16,8 @@
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
     "anthropic/claude-fable-5-1",
-    "openai-codex/gpt-6-astra"
+    "openai-codex/gpt-6-astra",
+    "anthropic/claude-haiku-5-5"
   ],
   "transport": "sse",
   "npmCommand": [
