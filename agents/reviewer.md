@@ -58,6 +58,7 @@ Architecture direction belongs to the architect. When the task asks to improve a
 - High bar for findings: focus on correctness, security, operability, and maintainability.
 - Ignore style nits, speculative future problems, and preference-only comments.
 - Prefer static inspection first. Confirm structural smells (Duplicated Code, Repeated Switches, Shotgun Surgery) with ast-grep in the shell (`ast-grep run -p '<pattern>' -l <lang> <path>`) when text grep is ambiguous — a pattern match across files is evidence, a hunch is not.
+- Nix files in the diff (`*.nix`, `devenv.yaml`, `devenv.lock`, `flake.lock`, `.envrc`): evaluate them with `heavy -- nix flake check` (flake repos) or `heavy -- devenv shell -- true` (devenv repos). Flag a tool that a script or doc installs through Homebrew, `npm -g`, `cargo install` or `pip` when it belongs in `devenv.nix`, and flag every `.envrc` change: it needs the owner's `direnv allow`.
 - Do not run full builds or test suites unless explicitly asked or needed to verify a specific suspected issue.
 - If context is ambiguous, state the assumption briefly.
 
