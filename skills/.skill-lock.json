@@ -1380,6 +1380,16 @@
       "pluginName": "taste-skill",
       "installedAt": "2026-10-22T21:33:41.396Z",
       "updatedAt": "2026-10-22T21:33:41.396Z"
+    },
+    "hallmark": {
+      "source": "nutlope/hallmark",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/nutlope/hallmark.git",
+      "skillPath": "skills/hallmark/SKILL.md",
+      "skillFolderHash": "9bef0978c1448d6e5fbeacfa7302326d6183a06c",
+      "pluginName": "hallmark",
+      "installedAt": "2026-10-23T13:00:31.236Z",
+      "updatedAt": "2026-10-23T13:00:31.236Z"
     }
   },
   "dismissed": {
@@ -1391,6 +1401,7 @@
     "codex",
     "cursor",
     "droid",
+    "fx",
     "gemini-cli",
     "github-copilot",
     "kilo",

@@ -3,8 +3,8 @@
 
 /** dynamic: the word holds a command substitution (its text shows "_" there). */
 type Word = { text: string; start: number; end: number; dynamic?: boolean };
-/** depth: subshell nesting, for cd tracking. */
-type Segment = { words: Word[]; source: string; depth: number };
+/** depth: subshell nesting, for cd tracking. stdin: input comes from a pipe or a `<` redirect. */
+type Segment = { words: Word[]; source: string; depth: number; stdin: boolean };
 
 const SHELLS = new Set(["sh", "bash", "zsh", "dash"]);
 const KEYWORDS = new Set(["if", "then", "else", "elif", "do", "while", "until", "!", "{", "}"]);
@@ -17,6 +17,7 @@ export function parseSegments(source: string, baseDepth = 0): Segment[] {
 	let word: Word | undefined;
 	const pendingHeredocs: { tag: string; strip: boolean }[] = [];
 	let depth = baseDepth;
+	let stdin = false;
 	const add = (ch: string, at: number) => {
 		if (!word) word = { text: "", start: at, end: at };
 		word.text += ch;
@@ -28,7 +29,10 @@ export function parseSegments(source: string, baseDepth = 0): Segment[] {
 	};
 	const endSegment = () => {
 		endWord();
-		if (words.length) segments.push({ words, source, depth });
+		if (words.length) {
+			segments.push({ words, source, depth, stdin });
+			stdin = false;
+		}
 		words = [];
 	};
 	// Returns the index of the matching close of a `$(` that opens at i.
@@ -93,6 +97,7 @@ export function parseSegments(source: string, baseDepth = 0): Segment[] {
 		} else if (c === "<" && source[i + 1] === "<" && source[i + 2] !== "<") {
 			// Heredoc: remember the tag; its body starts after the next newline.
 			endWord();
+			stdin = true;
 			let j = i + 2;
 			const strip = source[j] === "-";
 			if (strip) j++;
@@ -107,6 +112,7 @@ export function parseSegments(source: string, baseDepth = 0): Segment[] {
 			// Redirection: drop the operator, a leading fd number, and the target.
 			if (word && /^\d+$/.test(word.text)) word = undefined;
 			endWord();
+			if (c === "<") stdin = true;
 			let j = i + 1;
 			if (source[j] === ">" || source[j] === "&" || source[j] === "|") j++;
 			while (source[j] === " " || source[j] === "\t") j++;
@@ -133,6 +139,14 @@ export function parseSegments(source: string, baseDepth = 0): Segment[] {
 			}
 		} else if (";&|()".includes(c)) {
 			endSegment();
+			if (c === "|") {
+				// `||` is a list operator; `|` and `|&` feed the next command.
+				if (source[i + 1] === "|") i++;
+				else {
+					stdin = true;
+					if (source[i + 1] === "&") i++;
+				}
+			}
 			if (c === "(") depth++;
 			else if (c === ")") depth = Math.max(baseDepth, depth - 1);
 		} else if (c === " " || c === "\t") {
