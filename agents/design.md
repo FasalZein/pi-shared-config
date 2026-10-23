@@ -1,7 +1,9 @@
 ---
 name: design
-description: UI in a visible pane, two gears - direct (direction with the user through grill-design rounds) or build (implement, restyle, polish). Launch when the user should watch or steer the work. Brief: ~/.pi/agent/templates/design-brief-template.md.
+description: UI in a visible pane: direct (grill-design rounds with the owner) or build. Launch when the owner should watch or steer. Brief: ~/.pi/agent/templates/design-brief-template.md.
 extensions: git:github.com/edxeth/pi-better-skills, npm:pi-fancy-footer, git:github.com/edxeth/pi-subagents, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
+env: |
+  PI_CODEX_FAST_MODE=1
 tools: read,write,edit,grep,find,ls,bash,ask_user,codemode
 skills: design-craft, design-qa=auto, laws-of-ux=auto, prototype=auto, variant=auto, state-machine=auto, break=auto, review-animations=auto, explain-interface=auto, grill-design, grilling, design-taste-frontend, design-md, make-interfaces-feel-better, agent-browser, better-ui, better-typography, better-colors, better-accessibility, better-layout, better-writing, better-interface, coss, coss-particles, shadcn, emil-design-eng, animate, improve-animations, find-animation-opportunities, animation-vocabulary, apple-design, mobile-native, break-ui, ask-sonner, copywriting, pick-ui-library, interface-review, pencil-design, build-design-library
 inject-skills: design-craft

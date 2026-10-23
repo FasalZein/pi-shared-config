@@ -1,6 +1,6 @@
 ---
 name: hardener
-description: Landing-receipt stage after cleaner - drive the scoped diff to 100% coverage, kill every mutant or prove it equivalent, then show the scoped suite green on unmutated code and record the landing receipt as AGENTS.md defines it. Test-code edits only; bugs go in the report.
+description: Landing receipt, once per integration batch after cleaner: 100% coverage of the batch diff, every mutant killed or proven equivalent, suite green. Test-code edits only; bugs go in the report.
 tools: read,bash,edit,write,codemode
 extensions: git:github.com/edxeth/pi-better-skills, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 model: anthropic/claude-opus-5-5

@@ -357,7 +357,7 @@ done
 for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   cp "$SYNC_REPO/agents/$agent.md" "$LIVE_AGENT/agents/$agent.md"
 done
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   cp -R "$SYNC_REPO/skills/$skill" "$LIVE_AGENT/skills/$skill"
 done
 python3 - "$SYNC_REPO/skills/symlinks.json" "$LIVE_AGENT/skills" <<'PY'
@@ -399,7 +399,7 @@ done
 for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   printf '\nLive agent marker: %s.\n' "$agent" >> "$LIVE_AGENT/agents/$agent.md"
 done
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   printf 'live %s\n' "$skill" > "$LIVE_AGENT/skills/$skill/live-sync-marker"
 done
 python3 - "$LIVE_AGENT/settings.json" "$LIVE_AGENT/models.json" "$LIVE_AGENT/agents/scout.md" <<'PY'
@@ -466,7 +466,7 @@ cmp "$LIVE_AGENT/scripts/live-script" "$SYNC_REPO/agent-scripts/live-script"
 for agent in architect cleaner design-builder design github hardener researcher reviewer scout worker; do
   grep -q "Live agent marker: $agent" "$SYNC_REPO/agents/$agent.md"
 done
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   cmp "$LIVE_AGENT/skills/$skill/live-sync-marker" "$SYNC_REPO/skills/$skill/live-sync-marker"
 done
 cmp "$LIVE_AGENT/extensions/pi-tps.ts" "$SYNC_REPO/extensions/pi-tps.ts"

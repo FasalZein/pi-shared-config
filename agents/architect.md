@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Grill a fuzzy idea into a repository specification file and authorized GitHub delivery tickets in its own pane. Launch when shaping would flood the parent (a whole specification) or the parent is mid-thread; small ideas grill in the main chat. Brief: decisions, constraints, open questions, file paths (long thread: a handoff document, ~/.pi/agent/skills/handoff/SKILL.md).
+description: Shape a fuzzy idea into a spec file and authorized GitHub tickets, grilling the owner in its own pane. Launch for a whole specification; small ideas grill in the main chat. Brief: decisions, constraints, open questions, file paths.
 extensions: git:github.com/edxeth/pi-subagents, git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 tools: all
 skills: grill-with-docs, grilling, domain-modeling, codebase-design, to-spec, to-tickets, variant, review-animations, pick-ui-library, interface-review, pencil-design, build-design-library, explain-interface, prototype, wayfinder, grill-me, ask-matt, to-questionnaire, handoff

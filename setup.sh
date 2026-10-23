@@ -123,7 +123,7 @@ fi
 echo "==> Applying local skill adaptations to the shared skill store"
 python3 "$SCRIPT_DIR/scripts/skill-adaptations.py" apply --store "$HOME/.agents/skills"
 copy_file "$SCRIPT_DIR/skills/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   copy_dir_contents "$SCRIPT_DIR/skills/$skill" "$PI_AGENT_DIR/skills/$skill"
 done
 python3 - "$SCRIPT_DIR/skills/symlinks.json" "$PI_AGENT_DIR/skills" <<'PY'

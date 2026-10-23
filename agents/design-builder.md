@@ -1,7 +1,9 @@
 ---
 name: design-builder
-description: Headless UI - build a scoped piece from a brief through the design-craft phases and verify it with rendered screenshots before reporting. Launch for background or parallel UI builds; live-steered UI work goes to design. Brief: ~/.pi/agent/templates/design-brief-template.md.
+description: Headless UI build from a brief through the design-craft phases, verified in Chrome before reporting. For background or parallel UI; live-steered UI goes to design. Brief: ~/.pi/agent/templates/design-brief-template.md.
 extensions: git:github.com/edxeth/pi-better-skills, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
+env: |
+  PI_CODEX_FAST_MODE=1
 tools: read,write,edit,grep,find,ls,bash,codemode
 skills: design-craft, design-qa=auto, shadcn
 inject-skills: design-craft

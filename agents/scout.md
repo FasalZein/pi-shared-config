@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Codebase reconnaissance in two sizes - quick lookup ("where is X", "does Y exist") returns a direct answer plus paths; recon maps a feature or subsystem into a report artifact for a downstream brief. A file whose path the parent already holds is cheaper to read in place.
+description: Codebase recon: a quick lookup returns an answer plus paths; a recon maps a subsystem into a report for a later brief. Read a file whose path you already hold yourself.
 extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 tools: read,write,grep,find,ls,bash,codemode
 skills: none

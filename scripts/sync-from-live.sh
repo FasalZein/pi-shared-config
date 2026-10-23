@@ -90,7 +90,7 @@ done
 for agent in "${LIVE_AGENTS[@]}"; do
   require_path "$SOURCE_DIR/agents/$agent.md"
 done
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   require_path "$SOURCE_DIR/skills/$skill"
 done
 for tool in "${BIN_FILES[@]}"; do
@@ -135,7 +135,7 @@ done
 
 skill_stage="$(mktemp -d)"
 trap 'rm -rf "$skill_stage"' EXIT
-for skill in bro msw cmux; do
+for skill in bro msw cmux browser-checks; do
   sync_dir "$SOURCE_DIR/skills/$skill" "$skill_stage/$skill"
 done
 cp "$SKILL_STORE_DIR/.skill-lock.json" "$skill_stage/.skill-lock.json"

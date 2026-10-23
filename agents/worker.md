@@ -1,7 +1,9 @@
 ---
 name: worker
-description: Implements one scoped code slice or fix - writes code, runs targeted tests, commits, reports what changed. Launch it with the brief inlined (Ticket/Recon/State via !`cat` placeholders). UI work goes to design or design-builder; edits the parent can make directly stay in the parent.
+description: One scoped code slice or fix: code, targeted tests, e2e proof for user-visible changes, commit, report. Inline the brief (Ticket/Recon/State via !`cat`). UI goes to design or design-builder; small edits stay in the parent.
 extensions: git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
+env: |
+  PI_CODEX_FAST_MODE=1
 tools: read,write,edit,grep,find,ls,bash,codemode
 inject-skills: principle-prove-it-works
 skills: tdd, principle-prove-it-works, principle-type-system-discipline

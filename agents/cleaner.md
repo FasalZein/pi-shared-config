@@ -1,6 +1,6 @@
 ---
 name: cleaner
-description: CRAP-gate a green slice - add behavior-asserting tests and simplify until every changed function is CRAP 6 or below (task-relaxable to 8). Launch after tests pass, before hardener. Suspected bugs go in the report.
+description: CRAP gate, once per integration batch before hardener: behavior-asserting tests and simplification until every changed function is CRAP 6 or below. Bugs go in the report.
 tools: read,bash,edit,write,codemode
 extensions: git:github.com/edxeth/pi-better-skills, npm:pi-fancy-footer, ~/.pi/agent/extensions/pi-tps.ts, git:github.com/edxeth/pi-claude-auth, npm:pi-grok-cli, ~/.pi/agent/extensions/env-wrap/index.ts
 model: anthropic/claude-opus-5-5
