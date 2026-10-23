@@ -144,14 +144,16 @@ export default function skillGate(pi: ExtensionAPI) {
 		event.systemPromptOptions.skills = gated;
 	});
 
-	// before_agent_start alone is not enough. Runs started by triggerTurn
-	// messages (subagent results) skip it, and pi builds their prompt from the
-	// ungated options. Pi then records a system message that switches the
-	// catalog to every skill, and the next user prompt records a switch back.
-	// Each switch changes the request prefix, so Claude Opus 5.5 drops every
-	// earlier thinking block and the prompt cache restarts. context_with_system
-	// runs before every provider request on a clone of the transcript, so the
-	// wire always carries the same gated catalog and the session keeps its
+	// Since pi 1.4.0, runs started by triggerTurn messages (subagent results)
+	// also fire before_agent_start (messageType "custom"), so the filter above
+	// gates them too. Before 1.4.0 they skipped it: pi built their prompt from
+	// the ungated options and recorded a system message that switched the
+	// catalog to every skill, and the next user prompt recorded a switch back.
+	// Sessions recorded then still hold those switches. Each switch changes the
+	// request prefix, so Claude Opus 5.5 drops every earlier thinking block and
+	// the prompt cache restarts. context_with_system runs before every provider
+	// request on a clone of the transcript, so the wire always carries the same
+	// gated catalog, also for resumed older sessions, and the session keeps its
 	// recorded entries.
 	pi.on("context_with_system", (event) => {
 		const gated = gateRequestSkills(event.messages);

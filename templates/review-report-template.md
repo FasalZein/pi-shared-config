@@ -15,14 +15,14 @@ Use this exact format:
 [what you reviewed — the exact file list or commit range, plus anything in scope you deliberately did not open, with the reason]
 
 ## Verdict
-APPROVE | NEEDS CHANGES | BLOCKED
+APPROVE | NEEDS-CHANGES | BLOCKED
 
 ## Bottom Line
 [2-3 sentences max]
 
 ## Findings
-- [P0|P1|P2] /absolute/path:line — issue, impact, recommended fix
-- [P0|P1|P2] artifact:<name> — issue, impact, recommended fix
+- [P0|P1|P2|P3] <lens> /absolute/path:line — issue, impact, recommended fix
+- [P0|P1|P2|P3] <lens> artifact:<name> — issue, impact, recommended fix
 - If there are no material issues, write: `- No material issues found.`
 
 ## Recommended Path
@@ -48,5 +48,8 @@ Severity:
 - **P0** — proven security issue, data loss risk, or likely production breakage
 - **P1** — likely real bug or operational footgun worth fixing now
 - **P2** — meaningful near-term maintainability or correctness concern
+- **P3** — minor improvement; list it only when it is cheap and concrete
+
+`<lens>` is the lens tag: `code-review:standards`, `code-review:spec`, `thermo-nuclear`, `ponytail`, `security`, `writing-for-agents`, or `research`.
 
 When several reviewers run in parallel, make findings machine-comparable so the parent can union them: one finding per line, severity first, then `path:line`, then the issue. Tag confidence in-line — `(confirmed)` if you verified it against the file or a command, `(suspected)` if it depends on runtime behaviour you could not check.
